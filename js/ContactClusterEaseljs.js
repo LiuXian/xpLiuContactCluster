@@ -3,119 +3,142 @@
     (function ($) {
         brite.registerView("ContactClusterEaseljs",  {emptyParent : true}, {
             create:function (data, config) {
-                var $html = app.render("tmpl-ContactClusterEaseljs");
-                var $e = $($html);
-                return $e;
+                return "<canvas id='demoCanvas' width='1000px' height='1000px'></canvas>";
             },
             
             postDisplay:function (data, config) {
             	var view = this;
                 var $e = view.$el;
                 
-              	var dataSet = createDataSet(30);
+              	var dataSet = createDataSet(3000);
 				var chartData = transformData(dataSet);
 				
+				var stage = new createjs.Stage("demoCanvas");
+				
 				view.dataSet = dataSet;
+				view.stage = stage;
+				
 			    view.showGraphic(chartData);            	
             },
             
             showGraphic: function(chartData, rx, ry) {
             	var view = this;
+            	rx = rx || 0;
+            	ry = ry || 0;            	
+            	var stage = view.stage;
+            	var container = new createjs.Container();
+            	container.name = "new"; 
+            	view.container = container;
             	
-            	// rx = rx || 0;
-            	// ry = ry || 0;            	
-            	rx = 0;
-            	ry = 0;
-            	
-            	var stage = new createjs.Stage("demoCanvas");
-			    var circleCen = new createjs.Shape();
-			    
-			    circleCen.graphics.beginFill("steelblue").drawCircle(0, 0, 4);
-			    
-			    circleCen.x = rx + 100;
-			    circleCen.y = ry + 100;
-			    
-			    
-			    stage.addChild(circleCen);
-			    stage.update();
-			    
-			    var g = new createjs.Graphics();
-			    
 			    var length = chartData.children.length;
 			    
-			    var circles = []
-			    
 			    for(var i = 0; i < length; i++) {
-			    	var r = chartData.children[i].weight*8;
+			    	var r = chartData.children[i].weight*30;
 			    	var cx = r*Math.cos(2*Math.PI*((i+1)/(length+1)));
 			    	var cy = r*Math.sin(2*Math.PI*((i+1)/(length+1)));
 			    	
+			    	var line = new createjs.Shape();
+      				line.graphics.beginStroke("#969DA7").moveTo(0,0).lineTo(cx,cy);
+			    	container.addChild(line);
+			    	
 			    	var circle = new createjs.Shape();
-			    	
-			    	circle.graphics.beginFill("red").drawCircle(cx, cy, 3);
-			    	
+			    	circle.graphics.beginStroke("#969DA7").beginFill("#E7FEFF").drawCircle(cx, cy, 10);
 			        circle.name = chartData.children[i].name;
-			    	
 			    	circle.cx = cx;
 			    	circle.cy = cy;
 			    	
-			    	circles.push(circle);
+			    	circle.addEventListener("click", handlerMethod);
 			    	
-			    	circle.x = rx + 100;
-			    	circle.y = ry + 100;
-					stage.addChild(circle);
-					stage.update();
+					container.addChild(circle);
 			    }
 			    
+			    var circleCen = new createjs.Shape();
+			    circleCen.graphics.beginStroke("#969DA7").beginFill("#FFF7D0").drawCircle(0, 0, 10);
+			    container.addChild(circleCen);
 			    
 			    
-			    // if(rx != 0 || ry != 0) {
-			    	// var duration = 1000;
-			    	// var time = 100;
-			    	// var cenx = circleCen.x;
-// 			    	
-			    	// if(cenx > 100) {
-			    		// setInterval(function() {
-			    			// if(circleCen.x > 100) {
-			    				// circleCen.x -= rx*(time/duration);
-			    				// stage.update();
-			    			// }
-			    		// },time)
-			    	// }
-// 			    	
-			    	// if(cenx < 100) {
-			    		// setInterval(function() {
-			    			// if(circleCen.x < 100) {
-			    				// circleCen.x -= rx*(time/duration);
-			    				// stage.update();
-			    			// }
-			    		// },time)
-			    	// }
-// 			    	
-			    // }
+			    container.x = rx + 500;
+			    container.y = ry + 500;
 			    
+			    stage.addChild(container);
+			    stage.update();
 			    
-				
-				for(var i = 0; i < circles.length; i++) {
-					circles[i].addEventListener("click", handlerMethod);
-				}
-			    
-			    
-				 function handlerMethod(event) {
-				 	var userName = event.target.name;
+				function handlerMethod(event) {
+					var userName = event.target.name;
 				 	var userData = transformData(view.dataSet,userName);
 				 	
-				 	stage.clear();
+				 	view.container.name = "old";
 				 	
 					view.showGraphic(userData, event.target.cx, event.target.cy);
 					
 					view.rx = event.target.cx;
 					view.ry = event.target.cy;
 					
-					//createjs.Ticker.addEventListener("tick", handleTick);  
-						
-				 }
-			
+					createjs.Ticker.addEventListener("tick", handleTick);  
+					view.s = (new Date()).getTime();
+					
+					view.stage.getChildByName("old").alpha = 1;
+			    }
+			    
+			    function handleTick() {
+					var oldContainer = view.stage.getChildByName("old");
+			    	var newContainer = view.stage.getChildByName("new");
+			    	var	t = (new Date()).getTime() - view.s;
+					var	b = 1;
+					var	d = 500;
+		            var c1 = adv(view.rx, b) * 100;
+		            var c2 = adv(view.ry, b) * 100;
+		            var c3 = adv(1, b) * 100;
+		            
+			    	oldContainer.alpha = oldContainer.alpha - 0.05;
+			        newContainer.alpha = newContainer.alpha + 0.05;
+			        
+			           
+					var dx = tween(t, (view.rx * b), c1, d) / 100;
+					var dy = tween(t, (view.ry * b), c2, d) / 100;
+			       
+			        
+					newContainer.x =  500 + view.rx - dx;
+					newContainer.y =  500 + view.ry - dy;
+			       
+					oldContainer.x =  500 - dx;
+					oldContainer.y =  500 - dy;
+			        
+					stage.update(event);
+					if(t > d ){
+						createjs.Ticker.removeEventListener("tick",handleTick);
+			        	stage.removeChild(oldContainer);
+			        	newContainer.alpha = 1;
+			        	stage.update(event);
+					}
+		             
+			    }
+
+				function tween(t, b, c, d){ return - c * (t /= d) * (t - 2) + b}
+			    
+			    function adv(val, b){
+                   var va, re= /^([+-\\*\/]=)([-]?[\d.]+)/ ;
+                        if (re.test(val)){
+                            var reg = val.match(re);
+                                reg[2] = parseFloat(reg[2]);
+                                switch ( reg[1] ){
+                                        case '+=':
+                                            va = reg[2];
+                                            break;
+                                        case '-=':
+                                            va = -reg[2];
+                                            break;
+                                        case '*=':
+                                            va = b*reg[2] - b;
+                                            break;
+                                        case '/=':
+                                            va = b/reg[2] - b;
+                                            break;
+                                    }
+                                return va;
+                            } 
+                        return parseFloat(val) - b;
+                }
 			    
             },
             

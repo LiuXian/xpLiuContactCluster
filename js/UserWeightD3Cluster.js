@@ -14,7 +14,7 @@
             	var view = this;
                 var $e = view.$el;
                 
-              	var dataSet = createDataSet(30);
+              	var dataSet = createDataSet(3000);
 				var chartData = transformData(dataSet);
 				
 				view.dataSet = dataSet;
@@ -76,8 +76,8 @@
 						.data(nodes)
 						.enter()
 						.append("circle")
-					  	.attr("r", 8)
-					  	.attr("style", "fill:#FFFFFF")
+					  	.attr("r", 10)
+					  	.attr("style", function(d) { return (d.depth == 0) ? "fill:#FFF7D0" : "fill:#E7FEFF"})
 					  	.on("click", click); 	 	    
 				  	    
 			  	    
@@ -101,7 +101,7 @@
 					    
 		        		vis.selectAll("circle").transition()
 				       		.ease("linear")
-				       		.duration(1000)
+				       		.duration(500)
 				       		.attr("cx",function(d){return xs(d)-cxVal})
 				       		.attr("cy",function(d){return ys(d)-cyVal})
 				       		.style("opacity",function(d) {return (d.name == userName ? 1 :0.5);});
@@ -109,7 +109,7 @@
 				       		
 				       	vis.selectAll("g.link").select("line").transition()
 				       		.ease("linear")
-				       		.duration(1000)
+				       		.duration(500)
 				       		.attr("x1", function(d) { return xs(d)-cxVal; })
 					        .attr("y1", function(d) { return ys(d)-cyVal; })
 					        .attr("x2", function(d) { return xs(nodes[0])-cxVal; })
@@ -119,7 +119,7 @@
 					    
 					    window.setTimeout(function(){
 				        		view.display(userData);
-				        },1000);
+				        },500);
 			        	
 					    
 					   

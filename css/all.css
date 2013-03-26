@@ -1,11 +1,11 @@
 g circle {
   fill: #fff;
-  stroke: steelblue;
+  stroke: #969DA7;
   stroke-width: 1.5px;
 }
 .link {
   fill: none;
-  stroke: #ccc;
+  stroke: #969DA7;
   stroke-width: 1.5px;
 }
 
