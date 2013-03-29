@@ -7,22 +7,14 @@
                 var $e = $($html);
                 return $e;
             },
-            
             postDisplay:function (data, config) {
-            	var view = this;
+                var view = this;
                 var $e = view.$el;
-				
-				brite.display("UserWeightD3Cluster","#main-container");
-				
-            },
-            
-            events:{
-            		
-            	
+                brite.display("ReportHeader");
+                brite.display("EaselJSTweenContactCluster");
             }
             
         });
-      
     })(jQuery);
 
 
