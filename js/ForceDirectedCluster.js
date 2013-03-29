@@ -68,7 +68,7 @@
 							.enter().append("svg:g").attr("class", "node")
 							.on("click", click);
 							
-				node.append("svg:circle").attr("r", radius).style("fill", color);
+				node.append("svg:circle").attr("r", radius).style("fill", color).style("stroke", "#969DA7");
 					
 				node.append("text").attr("dx", 12).attr("dy", ".35em").text(function(d) { return d.name });
 					
@@ -212,7 +212,7 @@
 		
 		//Color leaf nodes orange, and packages white or blue.
 		function color(d) {
-			return d._children ? "green" : d.children ? "green" : "#fd8d3c";
+			return d._children ? "green" : d.children ? "#FFF7D0" : "#E7FEFF";
 		}
 		
 		function radius(d) {
