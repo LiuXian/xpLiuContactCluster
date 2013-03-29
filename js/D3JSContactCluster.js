@@ -1,34 +1,35 @@
 ;(function() {
 
     (function ($) {
-        brite.registerView("UserWeightD3Cluster",  {
+        brite.registerView("D3JSContactCluster",  {
 			emptyParent : true,
 			parent:".MainScreen-main"
 		}, {
         	create:function (data, config) {
-                var $html = app.render("tmpl-UserWeightD3Cluster");
+                var $html = app.render("tmpl-D3JSContactCluster");
                	var $e = $($html);
                 return $e;
             },
             postDisplay:function (data, config) {
                 var view = this;
                 var $e = view.$el;
-                
-                var dataSet = app.createDataSet(30);
-				var chartData = app.transformData(dataSet);
-				view.dataSet = dataSet;
-                
-                view.showView(chartData);
+          		
+				app.ContactDao.get().done(function(chartData){
+                	view.showView(chartData);
+				});
 			},
-			showView:function(data){
+			showView:function(data,offset){
 				var view = this;
                 var $e = view.$el;
                 view.curData = data;
+                var userName = data.name;
                 
-				var $container = $e.find(".UserWeightD3ClusterSummary");
-                //clear container
-				$container.empty();
-				$container.append("<div class='fstCon'></div>");
+				var $container = $e.find(".D3JSContactClusterSummary");
+				
+				if(typeof offset == "undefined"){
+					offset ={xVal:0,yVal:0};
+					$container.append("<div class='fstCon'></div>");
+				}
                 
                 var w = 1000,
 				    h = 800,
@@ -43,16 +44,17 @@
 				var cluster = d3.layout.cluster()
 				    .size([360, ry - 120])
 				    .sort(function(a, b){return d3.ascending(a.weight, b.weight);});
-				
-				var svg = d3.select(".fstCon").append("div")
+
+				var svg = d3.select(".fstCon").append("svg:svg")
 				    .style("width", w + "px")
-	    			.style("height", w + "px");
+	    			.style("height", w + "px")
+	    			.style("position", "absolute")
+				    .style("z-index", 1);
 				
-				var vis = svg.append("svg:svg")
-				    .attr("width", w)
-				    .attr("height", w)
-				    .append("svg:g")
-				    .attr("transform", "translate(" + rx + "," + ry + ")");
+				var vis = svg.append("svg:g")
+				    .style("opacity",0)
+				    .attr("class","curChart")
+			    	.attr("transform", "translate(" + (rx+parseFloat(offset.xVal)) + "," + (ry+parseFloat(offset.yVal)) + ")");
 				    
 				var defs = vis.append("defs");
 			
@@ -88,30 +90,30 @@
 			          	.append("svg:g")
 			          	.attr("class", "link")
 			          	.append("line")
-			          	.attr("x1", function(d) { return 0; })
-			          	.attr("y1", function(d) { return 0; })
+			          	.attr("x1", function(d) { return xs(d); })
+			          	.attr("y1", function(d) { return ys(d); })
 			          	.attr("x2", function(d) { return xs(nodes[0]); })
-			          	.attr("y2", function(d) { return ys(nodes[0]); });
+			          	.attr("y2", function(d) { return ys(nodes[0]); })
+			          	.style("opacity",function(d) {return 0;});
 				
 				vis.selectAll(".dot")
 						.data(nodes)
 						.enter().append("circle")
 					  	.attr("class", function(d){ return (d.depth==0) ? "origin" : "nodes";})
-					  	.attr("cx", function(d) { return 0; })
-					  	.attr("cy", function(d) { return 0; })
+					  	.attr("cx", function(d) { return xs(d); })
+					  	.attr("cy", function(d) { return ys(d); })
 					  	.attr("r", function(d){ return (d.depth==0) ? 12 : 8; })
 					  	.attr("style",function(d){return (d.depth==0) ? "fill:url(#radialGradientOrigin)" : "fill:url(#radialGradientNodes)";})
+					  	.style("opacity",function(d) {return (d.name == userName ? 1 : 0);})
 					  	.on("click", click);
 					  	
 				vis.selectAll("circle").append("title").text(function(d) { return "Weight: " + d.weight; });
-					  
-				vis.selectAll("g.link").select("line").transition().ease("linear").duration(1000)
-					.attr("x1", function(d) { return xs(d); })
-				    .attr("y1", function(d) { return ys(d); });
+				
+				vis.selectAll("g.link").select("line").transition().ease("linear").duration(300)
+					.style("opacity",function(d) {return 1;});
 				    
-		        vis.selectAll("circle").transition().ease("linear").duration(1000)
-					.attr("cx", function(d) { return xs(d); })
-					.attr("cy", function(d) { return ys(d); });
+		        vis.selectAll("circle").transition().ease("linear").duration(300)
+					.style("opacity",function(d) {return 1;});
 				  
 				var node = vis.selectAll("g.node")
 				    	.data(nodes)
@@ -125,6 +127,8 @@
 				      	.attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; })
 				      	.text(function(d) { return d.name; });
 				      	
+				vis.transition().ease("linear").duration(app.speed).attr("transform", "translate(" + rx + "," + ry + ")").style("opacity",1);
+						    
 				function getNodeTranslate(d){
 		        	var translate = (d.depth>0?(d.y-150+((10-d.weight)*10)):d.y);
 		        	return translate;
@@ -136,11 +140,8 @@
 		        	var thisCircle = d3.select(this);
 		        	var cxVal = thisCircle.attr("cx");
 		        	var cyVal = thisCircle.attr("cy");
-		        	
+		        	var offset ={xVal:cxVal,yVal:cyVal};
 		        	if(view.curData.name != userName){
-		        		var parentName = d.parent.name;
-		        		var userData = app.transformData(view.dataSet,userName);
-				   		
 				   		vis.select("circle.origin").attr("class","nodes")
 				   			.attr("style","fill:url(#radialGradientNodes)")
 				   			.attr("r", 8);
@@ -148,37 +149,23 @@
 				   		thisCircle.attr("class","origin")
 				   			.attr("style","fill:url(#radialGradientOrigin)")
 							.attr("r", 12);
-		  			    
-				       	vis.selectAll("circle").transition()
-				       		.ease("linear")
-				       		.duration(1000)
-				       		.attr("cx",function(d){return xs(d)-cxVal})
-				       		.attr("cy",function(d){return ys(d)-cyVal})
-				       		.style("opacity",function(d) {return (d.name == userName ? 1 :0.1);})
-				       		.remove();
-				       		
-				       	vis.selectAll("g.link").select("line").transition()
-				       		.ease("linear")
-				       		.duration(1000)
-				       		.attr("x1", function(d) { return xs(d)-cxVal; })
-					        .attr("y1", function(d) { return ys(d)-cyVal; })
-					        .attr("x2", function(d) { return xs(nodes[0])-cxVal; })
-					        .attr("y2", function(d) { return ys(nodes[0])-cyVal; })
-					        .style("opacity",0.1)
-					        .remove();
-					      
-					   	vis.selectAll("g.node").transition().ease("linear").duration(500).style("opacity",0).remove();
+							
+				      	svg.select("g.curChart").transition().ease("linear").duration(app.speed)
+	        		  		.attr("transform", "translate(" + (rx-parseFloat(cxVal)) + "," + (ry-parseFloat(cyVal)) + ")")
+	        		  		.style("opacity",0);
+	        		  	
+	        		  	app.ContactDao.getByName(userName).done(function(userData){
+		                	view.showView(userData,offset);
+						});
 				       
 			        	window.setTimeout(function(){
-			        		view.showView(userData);
-			        	},1000);
+			        		svg.remove();
+			        	},app.speed);
 		        	}
 		        }
 	
 			}
         });
-        
-        
         
     })(jQuery);
 })();
