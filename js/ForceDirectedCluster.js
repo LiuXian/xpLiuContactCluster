@@ -29,6 +29,7 @@
 				    root;
 				
 				root = data;
+				
 			  	root.x = w / 2;
 			  	root.y = h / 2 - 80;
 			  	
@@ -40,16 +41,20 @@
 				
 				var vis = d3.select(".fstCon.new").append("svg:svg").attr("width", w).attr("height", h);
 				
-				var force = d3.layout.force().size([w, h])
-								.charge(-120)
-    							.linkDistance(30);
+				var force = d3.layout.force().size([w, h]);
 			  	
+				var nodes = flatten(root),
+			        links = d3.layout.tree().links(nodes);
+			
+				var force = d3.layout.force().size([w, h]);
+			
 				var nodes = flatten(root),
 			        links = d3.layout.tree().links(nodes);
 			
 			  	force
 			    	.nodes(nodes)
 			      	.start();
+			
 				
 				var link = vis.selectAll(".new line.link")
 							.data(links, function(d) { return d.target.id; })
@@ -57,10 +62,10 @@
 							.append("svg:line")
 							.attr("class", "link")
 							.style("stroke", "#CCC")
-							.attr("x1", function(d) { return d.source.x; })
-				        	.attr("y1", function(d) { return d.source.y; })
-				        	.attr("x2", function(d) { return d.target.x; })
-				        	.attr("y2", function(d) { return d.target.y; });
+							.attr("x1", function(d) { return d.source.x*0.8; })
+				        	.attr("y1", function(d) { return d.source.y*0.8; })
+				        	.attr("x2", function(d) { return d.target.x*0.8; })
+				        	.attr("y2", function(d) { return d.target.y*0.8; });
 				
 				
 				var node = vis.selectAll(".new g.node")
@@ -72,12 +77,15 @@
 					
 				node.append("text").attr("dx", 12).attr("dy", ".35em").text(function(d) { return d.name });
 					
-			    node.attr("transform", function(d) { d.cx = d.x; d.cy = d.y; return "translate(" + d.x + "," + d.y + ")"; });
+			    node.attr("transform", function(d) { d.cx = d.x; d.cy = d.y; return "translate(" + d.x*0.8 + "," + d.y*0.8 + ")"; });
 					
 				node.append("title").text(function(d) { return d.name + ": " + d.weightVal; });
 				
 				
 				if (offset) {
+					var x = - offset.cx + root.x;
+					var y = - offset.cy + root.y;
+					
 					offset.cx = offset.cx - root.x;
 					offset.cy = offset.cy - root.y;
 			        
@@ -90,6 +98,14 @@
 			        setTimeout (function() {
 			        	$newDataView.css("transform", "translate(0px, 0px)");
 			        	$newDataView.css("opacity", "1");
+			        	
+			        	$(".old").css("transform", "translate(" + x + "px," + y + "px)");
+			        	$(".old").css("opacity", "0");
+			        	
+			        	setTimeout(function() {
+				        	$(".old").remove();
+				        },1000);
+			        	
 			        }, 10);
 			      
 			        
@@ -102,17 +118,12 @@
 						"cy" : d.cy
 					}
 					
+					
 					 var userName = d.name;
 					 $(".new").addClass("old");
 					 $(".new").removeClass("new");
 					
-					
-			        setTimeout (function() {
-			        	 $(".old").css("opacity", "0");
-			        }, 10);
-					 
-					 
-					 view.showView(transformData(view.dataSet,userName), offset);
+					view.showView(transformData(view.dataSet,userName), offset);
 				
 				}
 			
@@ -191,7 +202,6 @@
 				});
 			}
 			object.children.sort(weightSort);
-			console.log(object);
 			return object;
 		}
 		
