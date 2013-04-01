@@ -10,23 +10,25 @@
                	var $e = $($html);
                 return $e;
             },
+            
             postDisplay:function (data, config) {
                 var view = this;
                 var $e = view.$el;
                 
                 var dataSet = createDataSet(30);
 				var chartData = transformData(dataSet);
+				
 				view.dataSet = dataSet;
 				view.chartData = chartData;
-                
                 view.showView(chartData);
 			},
+			
 			showView:function(data, offset){
 				var view = this;
                 var $e = view.$el;
-                var w = 1000, 
-                	h = 800,
-				    root;
+                var w = 1000; 
+                var	h = 800;
+				var root;
 				
 				root = data;
 				
@@ -41,21 +43,15 @@
 				
 				var vis = d3.select(".fstCon.new").append("svg:svg").attr("width", w).attr("height", h);
 				
+				var nodes = flatten(root);
+			    var links = d3.layout.tree().links(nodes);
+			
 				var force = d3.layout.force().size([w, h]);
+				force.nodes(nodes).start();
+			
+				var nodes = flatten(root);
+			    var links = d3.layout.tree().links(nodes);
 			  	
-				var nodes = flatten(root),
-			        links = d3.layout.tree().links(nodes);
-			
-				var force = d3.layout.force().size([w, h]);
-			
-				var nodes = flatten(root),
-			        links = d3.layout.tree().links(nodes);
-			
-			  	force
-			    	.nodes(nodes)
-			      	.start();
-			
-				
 				var link = vis.selectAll(".new line.link")
 							.data(links, function(d) { return d.target.id; })
 							.enter()
@@ -81,7 +77,7 @@
 					
 				node.append("title").text(function(d) { return d.name + ": " + d.weightVal; });
 				
-				
+				//if the offset exists
 				if (offset) {
 					var x = - offset.cx + root.x;
 					var y = - offset.cy + root.y;
@@ -108,28 +104,21 @@
 			        	
 			        }, 10);
 			      
-			        
 			    }
 	
-				
+				//click the circle
 				function click(d) {
 					var offset = {
 						"cx" : d.cx, 
 						"cy" : d.cy
 					}
-					
-					
-					 var userName = d.name;
-					 $(".new").addClass("old");
-					 $(".new").removeClass("new");
+					var userName = d.name;
+					$(".new").addClass("old");
+					$(".new").removeClass("new");
 					
 					view.showView(transformData(view.dataSet,userName), offset);
-				
 				}
 			
-				//first undelegate the click event
-				$e.undelegate('circle', 'click');
-
 			}
         });
         
