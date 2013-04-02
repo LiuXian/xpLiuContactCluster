@@ -34,7 +34,7 @@ Handlebars.templates['tmpl-ForceDirectedCluster'] = Handlebars.template(function
   
 
 
-  return "<div class=\"ForceDirectedCluster\">\n		<div class=\"ForceDirectedClusterSummary\"></div>\n	</div>";}
+  return "<div class=\"ForceDirectedCluster\">\n		<canvas id='demoCanvas' width='1000px' height='1000px'></canvas>\n	</div>";}
 );
 
 // template --- tmpl-MainScreen ---
