@@ -1,227 +1,169 @@
 ;(function() {
-
+	
     (function ($) {
         brite.registerView("ForceDirectedCluster",  {
-			emptyParent : true,
+        	emptyParent : true,
 			parent:".MainScreen-main"
 		}, {
-        	create:function (data, config) {
-                var $html = app.render("tmpl-ForceDirectedCluster");
+            create:function (data, config) {
+            	var $html = app.render("tmpl-ForceDirectedCluster");
                	var $e = $($html);
                 return $e;
+            	
+                return "";
             },
             
             postDisplay:function (data, config) {
-                var view = this;
+            	var view = this;
                 var $e = view.$el;
-                
-                var dataSet = createDataSet(30);
-				var chartData = transformData(dataSet);
+				var stage = new createjs.Stage("demoCanvas");
+				view.stage = stage;
 				
-				view.dataSet = dataSet;
-				view.chartData = chartData;
-                view.showView(chartData);
-			},
-			
-			showView:function(data, offset){
-				var view = this;
-                var $e = view.$el;
-                var w = 1000; 
-                var	h = 800;
-				var root;
-				
-				root = data;
-				
-			  	root.x = w / 2;
-			  	root.y = h / 2 - 80;
-			  	
-				var $container = $e.find(".ForceDirectedClusterSummary");
-                
-				$container.append("<div class='fstCon new transition-medium'></div>");
-				
-				$newDataView = $(".new");
-				
-				var vis = d3.select(".fstCon.new").append("svg:svg").attr("width", w).attr("height", h);
-				
-				var nodes = flatten(root);
-			    var links = d3.layout.tree().links(nodes);
-			
-				var force = d3.layout.force().size([w, h]);
-				force.nodes(nodes).start();
-			
-				var nodes = flatten(root);
-			    var links = d3.layout.tree().links(nodes);
-			  	
-				var link = vis.selectAll(".new line.link")
-							.data(links, function(d) { return d.target.id; })
-							.enter()
-							.append("svg:line")
-							.attr("class", "link")
-							.style("stroke", "#CCC")
-							.attr("x1", function(d) { return d.source.x*0.8; })
-				        	.attr("y1", function(d) { return d.source.y*0.8; })
-				        	.attr("x2", function(d) { return d.target.x*0.8; })
-				        	.attr("y2", function(d) { return d.target.y*0.8; });
-				
-				
-				var node = vis.selectAll(".new g.node")
-							.data(nodes, function(d) { return d.id; })
-							.enter().append("svg:g").attr("class", "node")
-							.on("click", click);
-							
-				node.append("svg:circle").attr("r", radius).style("fill", color).style("stroke", "#969DA7");
-					
-				node.append("text").attr("dx", 12).attr("dy", ".35em").text(function(d) { return d.name });
-					
-			    node.attr("transform", function(d) { d.cx = d.x; d.cy = d.y; return "translate(" + d.x*0.8 + "," + d.y*0.8 + ")"; });
-					
-				node.append("title").text(function(d) { return d.name + ": " + d.weightVal; });
-				
-				//if the offset exists
-				if (offset) {
-					var x = - offset.cx + root.x;
-					var y = - offset.cy + root.y;
-					
-					offset.cx = offset.cx - root.x;
-					offset.cy = offset.cy - root.y;
-			        
-			        $newDataView.css("transform", "translate(" + offset.cx + "px," + offset.cy + "px)");
-			        $newDataView.css("opacity", "0");
-			        
-		        	offset.cx = offset.cx + root.x;
-					offset.cy = offset.cy + root.y;
-			        
-			        setTimeout (function() {
-			        	$newDataView.css("transform", "translate(0px, 0px)");
-			        	$newDataView.css("opacity", "1");
-			        	
-			        	$(".old").css("transform", "translate(" + x + "px," + y + "px)");
-			        	$(".old").css("opacity", "0");
-			        	
-			        	setTimeout(function() {
-				        	$(".old").remove();
-				        },1000);
-			        	
-			        }, 10);
-			      
+				app.ContactDao.get().done(function(chartData){
+                	view.chartData = chartData;
+                	view.showGraphic(chartData);
+                	console.log(chartData);
+				});
+            	
+            },
+            
+            showGraphic: function(chartData, rx, ry) {
+            	var view = this;
+            	rx = rx || 0;
+            	ry = ry || 0;
+            	
+            	var stage = view.stage;
+            	var container = new createjs.Container();
+            	container.name = "new"; 
+            	view.container = container;
+            	
+			    var length = chartData.children.length;
+			    
+			    //draw the nodes
+			    for(var i = 0; i < length; i++) {
+			    	var r = chartData.children[i].weight*20;
+			    	var cx = r*Math.cos(2*Math.PI*((i+1)/(length+1)));
+			    	var cy = r*Math.sin(2*Math.PI*((i+1)/(length+1)));
+			    	
+			    	var line = new createjs.Shape();
+      				line.graphics.beginStroke("#969DA7").moveTo(0,0).lineTo(cx,cy);
+			    	container.addChild(line);
+			    	
+			    	var circle = new createjs.Shape();
+			    	circle.graphics.beginStroke("#969DA7").beginFill("#E7FEFF").drawCircle(cx, cy, 8);
+			        circle.name = chartData.children[i].name;
+			    	circle.cx = cx;
+			    	circle.cy = cy;
+			    	
+			    	circle.addEventListener("click", handlerMethod);
+					container.addChild(circle);
 			    }
-	
-				//click the circle
-				function click(d) {
-					var offset = {
-						"cx" : d.cx, 
-						"cy" : d.cy
-					}
-					var userName = d.name;
-					$(".new").addClass("old");
-					$(".new").removeClass("new");
+			    
+			    //draw the center node
+			    var circleCen = new createjs.Shape();
+			    circleCen.graphics.beginStroke("#969DA7").beginFill("#FFF7D0").drawCircle(0, 0, 8);
+			    container.addChild(circleCen);
+			    
+			    container.x = rx + 500;
+			    container.y = ry + 500;
+			    
+			    stage.addChild(container);
+			    stage.update();
+			    
+			    //the click event method
+				function handlerMethod(event) {
+					var userName = event.target.name;
+				 	//var userData = transformData(view.dataSet,userName);
+				 	
+				 	view.container.name = "old";
+				 	
+				 	
+				 	app.ContactDao.getByName(userName).done(function(userData){ 
+				 		view.showGraphic(userData, event.target.cx, event.target.cy);
+				 	})
 					
-					view.showView(transformData(view.dataSet,userName), offset);
-				}
-			
-			}
+					
+					view.rx = event.target.cx;
+					view.ry = event.target.cy;
+					
+					createjs.Ticker.addEventListener("tick", handleTick);  
+					view.s = (new Date()).getTime();
+					
+					view.stage.getChildByName("old").alpha = 1;
+			    }
+			    
+			    
+			    //the animation of the movment
+			    function handleTick() {
+					var oldContainer = view.stage.getChildByName("old");
+			    	var newContainer = view.stage.getChildByName("new");
+			    	var	t = (new Date()).getTime() - view.s;
+					var	b = 1;
+					var	d = 500;
+		            var c1 = adv(view.rx, b) * 100;
+		            var c2 = adv(view.ry, b) * 100;
+		            var c3 = adv(1, b) * 100;
+		            
+			    	oldContainer.alpha = oldContainer.alpha - 0.05;
+			        newContainer.alpha = newContainer.alpha + 0.05;
+			        
+			           
+					var dx = tween(t, (view.rx * b), c1, d) / 100;
+					var dy = tween(t, (view.ry * b), c2, d) / 100;
+			       
+			        
+					newContainer.x =  500 + view.rx - dx;
+					newContainer.y =  500 + view.ry - dy;
+			       
+					oldContainer.x =  500 - dx;
+					oldContainer.y =  500 - dy;
+			        
+					stage.update(event);
+					if(t > d ){
+						createjs.Ticker.removeEventListener("tick",handleTick);
+			        	stage.removeChild(oldContainer);
+			        	newContainer.alpha = 1;
+			        	stage.update(event);
+					}
+		             
+			    }
+
+				function tween(t, b, c, d){ return - c * (t /= d) * (t - 2) + b}
+			    
+			    function adv(val, b){
+                   var va, re= /^([+-\\*\/]=)([-]?[\d.]+)/ ;
+                        if (re.test(val)){
+                            var reg = val.match(re);
+                                reg[2] = parseFloat(reg[2]);
+                                switch ( reg[1] ){
+                                        case '+=':
+                                            va = reg[2];
+                                            break;
+                                        case '-=':
+                                            va = -reg[2];
+                                            break;
+                                        case '*=':
+                                            va = b*reg[2] - b;
+                                            break;
+                                        case '/=':
+                                            va = b/reg[2] - b;
+                                            break;
+                                    }
+                                return va;
+                            } 
+                        return parseFloat(val) - b;
+                }
+                
+                
+			    
+            },
+            
+            events:{
+            }
+            
         });
         
-        // --------- Private Method --------- //
-        /**
-		 * Create a random dataset that can be use for rendering
-		 * @return an array of users, like:
-		 *         [{id:..,
-		 *           name:..,
-		 *           friends:[{id:..,name:..,weight:..},{..}]
-		 *          },
-		 *          {..}]
-		 */
-		function createDataSet(dataSize){
-			var dataSet = [];
-			dataSize = dataSize || 10;
-			
-			for(var i = 1; i <= dataSize;i++){
-				var data = {};
-				data.id = i;
-				data.name = "User" + i;
-				
-				//each user have 5 to 10 friends
-				var friendsNum = RandomData(5,10);
-				var friendsArr = [];
-				for(var j = 1; j < friendsNum;j++){
-					var friend = {};
-					if(j == i) continue;
-					friend.id = j;
-					friend.name = "User" + j;
-					friend.weightVal = RandomData(1,10);
-					friendsArr.push(friend);
-				}
-				data.friends = friendsArr;
-				
-				dataSet.push(data);
-			}
-			
-			return dataSet;
-		}
-		
-		//generate the data between fromNum and toNum
-		function RandomData(fromNum,toNum){ 
-			return parseInt(Math.random()*(toNum-fromNum) + fromNum); 
-		}
-		
-		/**
-		 * Transform the data get the dataSet by name ,default the first one
-		 * @return  like:
-		 *         {id:..,
-		 *           name:..,
-		 *           children:[{id:..,name:..,weight:..},{..}]
-		 *          }
-		 */
-		function transformData(dataSet,name){ 
-			var object = {};
-			if(typeof name == 'undefined'){
-				var dataPart = dataSet[0];
-				object.id = dataPart.id;
-				object.name = dataPart.name;
-				object.children = dataPart.friends;
-			}else{
-				$.each(dataSet,function(i,user){
-					if(name == user.name){
-						var dataPart = dataSet[i];
-						object.id = dataPart.id;
-						object.name = dataPart.name;
-						object.children = dataPart.friends;
-					}
-				});
-			}
-			object.children.sort(weightSort);
-			return object;
-		}
-		
-		// Returns a list of all nodes under the root.
-		function flatten(root) {
-			var nodes = [], i = 0;
-			
-			function recurse(node) {
-				if (node.children) node.size = node.children.reduce(function(p, v) { return p + recurse(v); }, 0);
-			    if (!node.id) node.id = ++i;
-			    nodes.push(node);
-			    return node.size;
-			}
-			
-			root.size = recurse(root);
-			return nodes;
-		}
-		
-		//Color leaf nodes orange, and packages white or blue.
-		function color(d) {
-			return d._children ? "green" : d.children ? "#FFF7D0" : "#E7FEFF";
-		}
-		
-		function radius(d) {
-			return d._children ? 10 : d.children ? 10 : 5;
-		}
-		
-		function weightSort(a,b){
-			return a.weightVal>b.weightVal ? 1 :-1;
-		}
-		// --------- /Private Method --------- //
-        
     })(jQuery);
+
+
 })();
