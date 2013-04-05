@@ -19,7 +19,7 @@ var app = app || {};
 	app.speed = 500;
 	
 	//create the data set
-	app.dataSet = app.createDataSet(300);
+	app.dataSet = app.createDataSet(300, 3, 6);
 	
 	app.useRAF = false;
 	app.animation = "tween";

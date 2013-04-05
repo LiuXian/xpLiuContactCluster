@@ -26,8 +26,17 @@
 					step: 1,
 					slide: function(event, ui) {
 						$("#level").val(ui.value);
+						view.level = ui.value;
+						view.showGraphic(view.chartData);
+						
+			    		var newContainer = view.stage.getChildByName("new");
+			    		view.stage.removeChild(newContainer);
+			    		view.stage.update();
+						
 					}
 				});
+				
+				view.level = $("#level-slider").slider("value")*1;
 				
 			    $("#level").val($("#level-slider").slider("value"));
 			    
@@ -35,8 +44,6 @@
                 	view.chartData = chartData;
                 	view.showGraphic(chartData);
 				});
-				
-				
             	
             },
             
@@ -54,7 +61,7 @@
 			    
 			    //draw the nodes
 			    for(var i = 0; i < length; i++) {
-			    	// var r = chartData.children[i].weight*50;					var r = 130 + chartData.children[i].weight*1;
+			    	// var r = chartData.children[i].weight*50;					var r = 200 + chartData.children[i].weight*1;
 					
 			    	var cx = r*Math.cos(2*Math.PI*((i+1)/(length+1)));
 			    	var cy = r*Math.sin(2*Math.PI*((i+1)/(length+1)));
@@ -72,7 +79,11 @@
 			    	circle.addEventListener("click", handlerMethod);
 					container.addChild(circle);
 					
-					drawCircle(container, circle);
+					
+					if(view.level == 2) {
+						showLevel(container, circle);
+					} 
+					
 			    }
 			    
 			    //draw the center node
@@ -184,11 +195,11 @@
                         return parseFloat(val) - b;
                 }
                 
-                function drawCircle(container, circle) {
+                function showLevel(container, circle) {
                 	view.circle = circle;
                 	app.ContactDao.getByName(circle.name).done(function(userData){
                 		 for(var i = 0; i < userData.children.length; i++) { 
-                		 	var r = 20 + userData.children[i].weight*1;
+                		 	var r = 50 + userData.children[i].weight*1;
 					    	var cx = r*Math.cos(2*Math.PI*((i+1)/(length+1))) + view.circle.cx;
 					    	var cy = r*Math.sin(2*Math.PI*((i+1)/(length+1))) + view.circle.cy;
 					    	
@@ -203,13 +214,16 @@
 					    	circle.cy = cy;
 					    	
 					    	circle.addEventListener("click", handlerMethod);
-							container.addChild(circle);		
+							container.addChild(circle);
+							
+									
                 		 }
+                		 
+                		 
                 		
-				 		//view.showGraphic(userData, event.target.cx, event.target.cy);
 				 	})
 				 	
-				 	  //draw the center node
+				 	//draw the center node
 				    var circleCen = new createjs.Shape();
 				    circleCen.graphics.beginStroke("#969DA7").beginFill("#FFF7D0").drawCircle(circle.cx, circle.cy, 5);
 				    container.addChild(circleCen);
