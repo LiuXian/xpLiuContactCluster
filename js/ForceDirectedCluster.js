@@ -1,10 +1,6 @@
 ;(function() {
 	
     (function ($) {
-    	var _colors = ["#0B95B1","#ff7f0e","#aec7e8","#dddddd"];
-    	var _centerColors = ["#ffe9c2","#0B95B1","#ff7f0e","#aec7e8","#dddddd"];
-    	var _weightPerLength = [20,10,8,4];
-    	var _baseLineLen = [80,40,20,10];
         brite.registerView("ForceDirectedCluster",  {
         	emptyParent : true,
 			parent:".MainScreen-main"
@@ -113,31 +109,6 @@
 			return circleCen;
 	    }
 	    
-	    //get the node's position
-		function getPos(chartData, level, cenCircle) {
-			var length = chartData.children.length;
-			var rx = cenCircle.cx;
-			var ry = cenCircle.cy;
-			
-			if(level == 1) {
-				var distance = 30;
-			} else if(level == 2) {
-				var distance = 100;
-			} else if(level == 3) {
-				var distance = 100;
-			}
-			
-			
-			for(var i = 0; i < length; i++) {
-				var r = distance + chartData.children[i].weight*1;
-				chartData.children[i].level = level;
-		    	chartData.children[i].cx = rx + r*Math.cos(2*Math.PI*((i+1)/(length+1)));
-		    	chartData.children[i].cy = ry + r*Math.sin(2*Math.PI*((i+1)/(length+1)));
-	    	}
-	    	
-	    	return chartData;
-		}
-		
 		//the click event method
 		function handlerMethod(event) {
 			var view = $("body").bFindComponents("ForceDirectedCluster")[0];
@@ -231,7 +202,7 @@
 				var ry = originPoint.y;
      			var containerRoot = new createjs.Container();
      			
-     			var fpos = calculateNodePosition.call(view, childrenData, originPoint, level, exAngle);
+     			var fpos = getPos.call(view, childrenData, originPoint, level, exAngle);
 			    
         		//draw the nodes and line
         		$.each(childrenData,function(i, item){
@@ -263,22 +234,25 @@
 			    return containerRoot;
         	}
         	
-        	function calculateNodePosition(childrenData,originPoint,level,exAngle){
+        	function getPos(childrenData,originPoint,level,exAngle){
         		var view = this;
         		var rx = originPoint.x;
 				var ry = originPoint.y;
-				var weightPerLength = _weightPerLength[view.level - level];
-      			var baseLineLen = _baseLineLen[view.level - level];
+				if(level == 3) {
+					l = 160;
+				}else if(level == 2) {
+					l = 60;
+				}else if(level == 3) {
+					l = 10;
+				}
+				
+      			
       			var angle = Math.PI * 2 / childrenData.length ;
         		
         		var fpos = [];
 		      	for(var i = 0; i < childrenData.length; i++){
 			        var cData = childrenData[i];
-			        var weight = cData.weight;
-					//the higher weight, the closer the length
-					weight = 10 - weight;
 					
-			        var l = weight * weightPerLength + baseLineLen;
 			        var cx = rx + l * Math.sin(angle * i + exAngle);
 			        var cy = ry + l * Math.cos(angle * i + exAngle);
 			        fpos.push({x:cx, y:cy});
