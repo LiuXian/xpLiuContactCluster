@@ -20,13 +20,12 @@
 				$("#level-slider").slider({
 					value:3,
 					min: 1,
-					max: 3,
+					max: 4,
 					step: 1,
 					slide: function(event, ui) {
 						$("#level").val(ui.value);
 						view.level = ui.value;
  						view.showGraphic(view.chartData);
-						
 			    		var newContainer = view.stage.getChildByName("new");
 			    		view.stage.removeChild(newContainer);
 			    		view.stage.update();
@@ -123,7 +122,6 @@
 			animate();
 	    }
 	    
-	    	    
 	    function animate() {
 	    	var view = $("body").bFindComponents("ForceDirectedCluster")[0];
 	    	var stage = view.stage;
@@ -191,7 +189,7 @@
                 return parseFloat(val) - b;
         }
         
-        	function createContainer(data, originPoint, level, exAngle){
+        function createContainer(data, originPoint, level, exAngle){
         		var view = this;
         		var parentName = data.name;
 				var childrenData = data.children;
@@ -238,12 +236,14 @@
         		var view = this;
         		var rx = originPoint.x;
 				var ry = originPoint.y;
-				if(level == 3) {
+				if(level == 4) {
 					l = 160;
-				}else if(level == 2) {
-					l = 60;
 				}else if(level == 3) {
-					l = 10;
+					l = 100;
+				}else if(level == 2) {
+					l = 40;
+				} else if(level == 1) {
+					l = 20;
 				}
 				
       			
@@ -259,39 +259,6 @@
 			    }
 			    return fpos;
         	}
-        	
-        	function createNodeCircle(cx,cy,cName,level){
-        		var view = this;
-		      	var r = 4;
-		    	var color = _colors[view.level - level];
-		      	var circle = new createjs.Shape();
-		      		circle.graphics.beginStroke("#a4998e").drawCircle(0, 0, r+0.5);
-		      		circle.graphics.beginFill(color).drawCircle(0, 0, r);
-		      		circle.x = cx;
-			        circle.y = cy;
-			        circle.name = cName;
-		      	return circle;
-		    }
-		    
-		    function createCenterCircle(cx,cy,cName,level){
-		    	var view = this;
-		      	var r = 6;
-		      	var color = _centerColors[view.level - level];
-		      	var circle = new createjs.Shape();
-		      		circle.graphics.beginStroke("#a4998e").drawCircle(0, 0, r+0.5);
-		      		circle.graphics.beginFill(color).drawCircle(0, 0, r);
-		      		circle.x = cx;
-			        circle.y = cy;
-			        circle.name = cName
-		      	return circle;
-		    }
-		    
-        	
-			function weightSort(a,b){
-				return a.weight>b.weight ? 1 :-1;
-			}
-		// --------- /Private Method --------- //
-
         
     })(jQuery);
 
