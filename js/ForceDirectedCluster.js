@@ -9,8 +9,6 @@
             	var $html = app.render("tmpl-ForceDirectedCluster");
                	var $e = $($html);
                 return $e;
-            	
-                return "";
             },
             
             postDisplay:function (data, config) {
@@ -20,15 +18,14 @@
 				view.stage = stage;
 				
 				$("#level-slider").slider({
-					value:2,
+					value:3,
 					min: 1,
-					max: 2,
+					max: 4,
 					step: 1,
 					slide: function(event, ui) {
 						$("#level").val(ui.value);
 						view.level = ui.value;
-						view.showGraphic(view.chartData);
-						
+ 						view.showGraphic(view.chartData);
 			    		var newContainer = view.stage.getChildByName("new");
 			    		view.stage.removeChild(newContainer);
 			    		view.stage.update();
@@ -56,7 +53,7 @@
 			    $("#zoom").val($("#zoom-slider").slider("value") + "%");
 			    
 				app.ContactDao.get().done(function(chartData){
-                	view.chartData = chartData;
+                	view.chartData = chartData;                	
                 	view.showGraphic(chartData);
 				});
             	
@@ -64,68 +61,22 @@
             
             showGraphic: function(chartData, rx, ry) {
             	var view = this;
-            	rx = rx || 0;
-            	ry = ry || 0;
+            	view.rx = rx || 0;
+            	view.ry = ry || 0;
             	
             	var stage = view.stage;
-            	var container = new createjs.Container();
-            	container.name = "new"; 
-            	view.container = container;
             	
-			    var length = chartData.children.length;
-			    chartData = getPos(chartData, 1);
+            	view.originPoint = {x:0, y: 0};
+            	
+			    var container = createContainer.call(view, chartData, view.originPoint, view.level, 0);
 			    
-			    //draw the nodes
-			    for(var i = 0; i < length; i++) {
-			    	var cx = chartData.children[i].cx;
-			    	var cy = chartData.children[i].cy;
-			    	
-			    	var line = genLine({x:0, y:0}, {x:cx, y:cy});
-			    	container.addChild(line);
-			    	
-			    	var circle = genCircle(5, {x: cx, y: cy}, chartData.children[i].name);
-			    	circle.addEventListener("click", handlerMethod);
-					container.addChild(circle);
-					
-					if(view.level == 2) {
-						showLevel(container, circle);
-					} 
-					
-			    }
-			    
-			    //draw the center node
-			    var circleCen = genCenter({x:0, y:0});
-			    container.addChild(circleCen);
-			    
-			    container.x = rx + 500;
-			    container.y = ry + 500;
-			    
+			    container.x = 500 + view.rx;
+				container.y = 500 + view.ry;
+			    container.name = "new";
 			    view.container = container;
+			    
 			    stage.addChild(container);
 			    stage.update();
-			    
-			    
-                function showLevel(container, circle) {
-                	view.circle = circle;
-                	app.ContactDao.getByName(circle.name).done(function(userData){
-                		userData = getPos(userData, 2);
-                		 for(var i = 0; i < userData.children.length; i++) { 
-					    	var cx = userData.children[i].cx + view.circle.cx;
-					    	var cy = userData.children[i].cy + view.circle.cy;
-					    	
-					    	var line = genLine({x:cx, y:cy}, {x:view.circle.cx, y:view.circle.cy});
-					    	container.addChild(line);
-					    	
-					    	var circle = genCircle(5, {x: cx, y: cy}, userData.children[i].name);
-					    	circle.addEventListener("click", handlerMethod);
-							container.addChild(circle);
-                		 }
-				 	})
-				 	
-				 	//draw the center node
-				    var circleCen = genCenter({x:circle.cx, y:circle.cy});
-				    container.addChild(circleCen);
-                }
 			    
             }
         });
@@ -151,27 +102,12 @@
 	    //generate center
 	    function genCenter(pos) {
 	    	var circleCen = new createjs.Shape();
+	    	circleCen.cx = pos.x;
+	    	circleCen.cy = pos.y;
 			circleCen.graphics.beginStroke("#969DA7").beginFill("#FFF7D0").drawCircle(pos.x, pos.y, 5);
 			return circleCen;
 	    }
 	    
-	    //get the node's position
-		function getPos(chartData, level) {
-			var length = chartData.children.length;
-			if(level == 1) {
-				var distance = 100;
-			} else if(level == 2) {
-				var distance = 30;
-			}
-			
-			for(var i = 0; i < length; i++) {
-				var r = distance + chartData.children[i].weight*1;
-		    	chartData.children[i].cx = r*Math.cos(2*Math.PI*((i+1)/(length+1)));
-		    	chartData.children[i].cy = r*Math.sin(2*Math.PI*((i+1)/(length+1)));
-	    	}
-	    	return chartData;
-		}
-		
 		//the click event method
 		function handlerMethod(event) {
 			var view = $("body").bFindComponents("ForceDirectedCluster")[0];
@@ -185,7 +121,6 @@
 			view.ry = event.target.cy;
 			animate();
 	    }
-	    
 	    
 	    function animate() {
 	    	var view = $("body").bFindComponents("ForceDirectedCluster")[0];
@@ -253,6 +188,77 @@
                     } 
                 return parseFloat(val) - b;
         }
+        
+        function createContainer(data, originPoint, level, exAngle){
+        		var view = this;
+        		var parentName = data.name;
+				var childrenData = data.children;
+				
+      			var stage = view.stage;
+      			var angle = Math.PI * 2 / childrenData.length ;
+      			var rx = originPoint.x;
+				var ry = originPoint.y;
+     			var containerRoot = new createjs.Container();
+     			
+     			var fpos = getPos.call(view, childrenData, originPoint, level, exAngle);
+			    
+        		//draw the nodes and line
+        		$.each(childrenData,function(i, item){
+        			if(level != view.level && i == 0) return;
+        			var cx = fpos[i].x;
+			        var cy = fpos[i].y;
+			        var cData = childrenData[i];
+			        
+			        var line = genLine({x: rx, y: ry}, {x: cx, y: cy});
+			        var node = genCircle(5, {x: cx, y: cy}, cData.name);
+			        containerRoot.addChild(line);
+			        containerRoot.addChild(node);
+			       	//add the click event for node
+					node.addEventListener("click", handlerMethod);
+			        
+			        //show the children level
+					if((level-1) > 0){
+						var newData = app.transformData(app.dataSet, cData.name, parentName);
+						var newContainer = createContainer.call(view, newData, {x:cx, y:cy}, level-1, (Math.PI + angle* i)+exAngle);
+						containerRoot.addChild(newContainer);
+					}
+				});
+				
+				var cenCircle = genCenter({x: rx, y: ry}); 
+				cenCircle.children = childrenData.length;
+			    containerRoot.addChild(cenCircle);
+			    cenCircle.addEventListener("click", handlerMethod);
+			    
+			    return containerRoot;
+        	}
+        	
+        	function getPos(childrenData,originPoint,level,exAngle){
+        		var view = this;
+        		var rx = originPoint.x;
+				var ry = originPoint.y;
+				if(level == 4) {
+					l = 160;
+				}else if(level == 3) {
+					l = 100;
+				}else if(level == 2) {
+					l = 40;
+				} else if(level == 1) {
+					l = 20;
+				}
+				
+      			
+      			var angle = Math.PI * 2 / childrenData.length ;
+        		
+        		var fpos = [];
+		      	for(var i = 0; i < childrenData.length; i++){
+			        var cData = childrenData[i];
+					
+			        var cx = rx + l * Math.sin(angle * i + exAngle);
+			        var cy = ry + l * Math.cos(angle * i + exAngle);
+			        fpos.push({x:cx, y:cy});
+			    }
+			    return fpos;
+        	}
         
     })(jQuery);
 
