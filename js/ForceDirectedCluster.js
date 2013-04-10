@@ -100,8 +100,9 @@
 	    }
 	    
 	    //generate center
-	    function genCenter(pos) {
+	    function genCenter(pos, name) {
 	    	var circleCen = new createjs.Shape();
+	    	circleCen.name = name;
 	    	circleCen.cx = pos.x;
 	    	circleCen.cy = pos.y;
 			circleCen.graphics.beginStroke("#969DA7").beginFill("#FFF7D0").drawCircle(pos.x, pos.y, 5);
@@ -111,9 +112,11 @@
 		//the click event method
 		function handlerMethod(event) {
 			var view = $("body").bFindComponents("ForceDirectedCluster")[0];
+			console.log(event.target);
 			var userName = event.target.name;
 		 	view.container.name = "old";
 		 	app.ContactDao.getByName(userName).done(function(userData){ 
+		 	    console.log(userData);
 		 		view.showGraphic(userData, event.target.cx, event.target.cy);
 		 	})
 			
@@ -128,6 +131,7 @@
 	    	view.s = (new Date()).getTime();
 	    	view.stage.getChildByName("old").alpha = 1;
 	    	createjs.Ticker.addEventListener("tick", handleTick);
+	    	
 	    	//the animation of the movment
 		    function handleTick() {
 				var oldContainer = view.stage.getChildByName("old");
@@ -224,7 +228,7 @@
 					}
 				});
 				
-				var cenCircle = genCenter({x: rx, y: ry}); 
+				var cenCircle = genCenter({x: rx, y: ry}, data.name); 
 				cenCircle.children = childrenData.length;
 			    containerRoot.addChild(cenCircle);
 			    cenCircle.addEventListener("click", handlerMethod);
@@ -236,15 +240,17 @@
         		var view = this;
         		var rx = originPoint.x;
 				var ry = originPoint.y;
-				if(level == 4) {
-					l = 160;
-				}else if(level == 3) {
-					l = 100;
-				}else if(level == 2) {
-					l = 40;
-				} else if(level == 1) {
-					l = 20;
-				}
+				
+				
+				if((view.level - level) == 0) {
+                    l = 150;
+                }else if((view.level - level) == 1) {
+                    l = 50;
+                }else if((view.level - level) == 2) {
+                    l = 10;
+                } else if((view.level - level) == 3) {
+                    l = 0;
+                }
 				
       			
       			var angle = Math.PI * 2 / childrenData.length ;
@@ -252,9 +258,10 @@
         		var fpos = [];
 		      	for(var i = 0; i < childrenData.length; i++){
 			        var cData = childrenData[i];
-					
-			        var cx = rx + l * Math.sin(angle * i + exAngle);
-			        var cy = ry + l * Math.cos(angle * i + exAngle);
+			        var weight = cData.weight;
+					console.log(weight);
+			        var cx = rx + (l + weight*5) * Math.sin(angle * i + exAngle);
+			        var cy = ry + (l + weight*5) * Math.cos(angle * i + exAngle);
 			        fpos.push({x:cx, y:cy});
 			    }
 			    return fpos;
