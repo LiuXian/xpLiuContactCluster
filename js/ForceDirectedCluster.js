@@ -100,8 +100,9 @@
 	    }
 	    
 	    //generate center
-	    function genCenter(pos) {
+	    function genCenter(pos, name) {
 	    	var circleCen = new createjs.Shape();
+	    	circleCen.name = name;
 	    	circleCen.cx = pos.x;
 	    	circleCen.cy = pos.y;
 			circleCen.graphics.beginStroke("#969DA7").beginFill("#FFF7D0").drawCircle(pos.x, pos.y, 5);
@@ -111,9 +112,11 @@
 		//the click event method
 		function handlerMethod(event) {
 			var view = $("body").bFindComponents("ForceDirectedCluster")[0];
+			console.log(event.target);
 			var userName = event.target.name;
 		 	view.container.name = "old";
 		 	app.ContactDao.getByName(userName).done(function(userData){ 
+		 	    console.log(userData);
 		 		view.showGraphic(userData, event.target.cx, event.target.cy);
 		 	})
 			
@@ -225,7 +228,7 @@
 					}
 				});
 				
-				var cenCircle = genCenter({x: rx, y: ry}); 
+				var cenCircle = genCenter({x: rx, y: ry}, data.name); 
 				cenCircle.children = childrenData.length;
 			    containerRoot.addChild(cenCircle);
 			    cenCircle.addEventListener("click", handlerMethod);
