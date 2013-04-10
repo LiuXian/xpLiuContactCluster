@@ -241,16 +241,27 @@
         		var rx = originPoint.x;
 				var ry = originPoint.y;
 				
-				l =  150*(level/view.level);
+				
+				if((view.level - level) == 0) {
+                    l = 150;
+                }else if((view.level - level) == 1) {
+                    l = 50;
+                }else if((view.level - level) == 2) {
+                    l = 10;
+                } else if((view.level - level) == 3) {
+                    l = 0;
+                }
+				
       			
       			var angle = Math.PI * 2 / childrenData.length ;
         		
         		var fpos = [];
 		      	for(var i = 0; i < childrenData.length; i++){
 			        var cData = childrenData[i];
-					
-			        var cx = rx + l * Math.sin(angle * i + exAngle);
-			        var cy = ry + l * Math.cos(angle * i + exAngle);
+			        var weight = cData.weight;
+					console.log(weight);
+			        var cx = rx + (l + weight*5) * Math.sin(angle * i + exAngle);
+			        var cy = ry + (l + weight*5) * Math.cos(angle * i + exAngle);
 			        fpos.push({x:cx, y:cy});
 			    }
 			    return fpos;
