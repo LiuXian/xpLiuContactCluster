@@ -128,6 +128,7 @@
 	    	view.s = (new Date()).getTime();
 	    	view.stage.getChildByName("old").alpha = 1;
 	    	createjs.Ticker.addEventListener("tick", handleTick);
+	    	
 	    	//the animation of the movment
 		    function handleTick() {
 				var oldContainer = view.stage.getChildByName("old");
@@ -236,16 +237,8 @@
         		var view = this;
         		var rx = originPoint.x;
 				var ry = originPoint.y;
-				if(level == 4) {
-					l = 160;
-				}else if(level == 3) {
-					l = 100;
-				}else if(level == 2) {
-					l = 40;
-				} else if(level == 1) {
-					l = 20;
-				}
 				
+				l =  150*(level/view.level);
       			
       			var angle = Math.PI * 2 / childrenData.length ;
         		
