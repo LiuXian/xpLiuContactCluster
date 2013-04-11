@@ -112,11 +112,9 @@
 		//the click event method
 		function handlerMethod(event) {
 			var view = $("body").bFindComponents("ForceDirectedCluster")[0];
-			console.log(event.target);
 			var userName = event.target.name;
 		 	view.container.name = "old";
 		 	app.ContactDao.getByName(userName).done(function(userData){ 
-		 	    console.log(userData);
 		 		view.showGraphic(userData, event.target.cx, event.target.cy);
 		 	})
 			
@@ -219,6 +217,12 @@
 			        containerRoot.addChild(node);
 			       	//add the click event for node
 					node.addEventListener("click", handlerMethod);
+					
+					//show the label
+					if((view.level - level) < 2) {
+					   var text = createText.call(view, cx, cy, cData.name);
+                        containerRoot.addChild(text);    
+					}
 			        
 			        //show the children level
 					if((level-1) > 0){
@@ -230,6 +234,12 @@
 				
 				var cenCircle = genCenter({x: rx, y: ry}, data.name); 
 				cenCircle.children = childrenData.length;
+				
+				if((view.level - level) < 2) {
+				    var text = createText.call(view, rx, ry, data.name);
+                    containerRoot.addChild(text);    
+				}
+				
 			    containerRoot.addChild(cenCircle);
 			    cenCircle.addEventListener("click", handlerMethod);
 			    
@@ -259,13 +269,21 @@
 		      	for(var i = 0; i < childrenData.length; i++){
 			        var cData = childrenData[i];
 			        var weight = cData.weight;
-					console.log(weight);
+					
 			        var cx = rx + (l + weight*5) * Math.sin(angle * i + exAngle);
 			        var cy = ry + (l + weight*5) * Math.cos(angle * i + exAngle);
 			        fpos.push({x:cx, y:cy});
 			    }
 			    return fpos;
         	}
+        	
+        	
+        	 function createText(x0, y0, name){
+                var text = new createjs.Text(name, "10px Arial, #000");
+                    text.x = x0 - 10;
+                    text.y = y0 + 10;
+                return text;
+            }
         
     })(jQuery);
 
