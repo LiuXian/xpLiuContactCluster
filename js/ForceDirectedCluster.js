@@ -22,7 +22,7 @@
 					min: 1,
 					max: 4,
 					step: 1,
-					slide: function(event, ui) {
+					stop: function(event, ui) {
 						$("#level").val(ui.value);
 						view.level = ui.value;
  						view.showGraphic(view.chartData);
