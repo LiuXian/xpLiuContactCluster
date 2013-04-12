@@ -15,6 +15,7 @@
             	var view = this;
                 var $e = view.$el;
 				var stage = new createjs.Stage("demoCanvas");
+				stage.enableMouseOver();
 				view.stage = stage;
 				
 				$("#level-slider").slider({
@@ -44,9 +45,7 @@
 					step: 10,
 					slide: function(event, ui) {
 						$("#zoom").val(ui.value + "%");
-						view.stage.getChildByName("new").scaleX = ui.value/100; 
-						view.stage.getChildByName("new").scaleY = ui.value/100; 
-						stage.update();
+						zoom.call(view, ui.value);
 					}
 				});
 				
@@ -72,6 +71,12 @@
 			    
 			    container.x = 500 + view.rx;
 				container.y = 500 + view.ry;
+				
+				var zoomValue = $("#zoom-slider").slider("value")/100;
+				
+				container.scaleX = zoomValue; 
+                container.scaleY = zoomValue; 
+				
 			    container.name = "new";
 			    view.container = container;
 			    
@@ -83,9 +88,12 @@
         
         
         //generate line
-	    function genLine(start, end) {
+	    function genLine(start, end, level) {
+	        var view = this;
 	    	var line = new createjs.Shape();
-			line.graphics.beginStroke("#969DA7").moveTo(start.x,start.y).lineTo(end.x, end.y);
+	    	color = ["#E1B57C", "#DDE17C", "#7CE1C8", "#BC7CE1"];
+	    	var index = view.level - level;
+			line.graphics.beginStroke(color[index]).moveTo(start.x,start.y).lineTo(end.x, end.y);
 			return line;
 	    }
 	    
@@ -121,6 +129,13 @@
 			view.rx = event.target.cx;
 			view.ry = event.target.cy;
 			animate();
+	    }
+	    
+	    function zoom(value) {
+	        var view = this;
+	        view.stage.getChildByName("new").scaleX = value/100; 
+            view.stage.getChildByName("new").scaleY = value/100; 
+            view.stage.update();
 	    }
 	    
 	    function animate() {
@@ -211,8 +226,8 @@
 			        var cy = fpos[i].y;
 			        var cData = childrenData[i];
 			        
-			        var line = genLine({x: rx, y: ry}, {x: cx, y: cy});
-			        var node = genCircle(5, {x: cx, y: cy}, cData.name);
+			        var line = genLine.call(view, {x: rx, y: ry}, {x: cx, y: cy}, level);
+			        var node = genCircle.call(view, 5, {x: cx, y: cy}, cData.name);
 			        containerRoot.addChild(line);
 			        containerRoot.addChild(node);
 			       	//add the click event for node
@@ -279,9 +294,22 @@
         	
         	
         	 function createText(x0, y0, name){
+        	    var view = this;
                 var text = new createjs.Text(name, "10px Arial, #000");
-                    text.x = x0 - 10;
-                    text.y = y0 + 10;
+                
+                text.addEventListener("mouseover", function(event) {
+                    event.target.color = "#6AD144";
+                    view.stage.update();
+                });
+                
+                text.addEventListener("mouseout", function(event) {
+                    event.target.color = "#000";
+                    view.stage.update();
+                });
+                
+                text.cursor = "pointer";
+                text.x = x0 - 10;
+                text.y = y0 + 10;
                 return text;
             }
         
