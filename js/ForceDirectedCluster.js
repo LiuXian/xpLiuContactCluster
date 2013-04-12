@@ -44,9 +44,7 @@
 					step: 10,
 					slide: function(event, ui) {
 						$("#zoom").val(ui.value + "%");
-						view.stage.getChildByName("new").scaleX = ui.value/100; 
-						view.stage.getChildByName("new").scaleY = ui.value/100; 
-						stage.update();
+						zoom.call(view, ui.value);
 					}
 				});
 				
@@ -124,6 +122,13 @@
 			view.rx = event.target.cx;
 			view.ry = event.target.cy;
 			animate();
+	    }
+	    
+	    function zoom(value) {
+	        var view = this;
+	        view.stage.getChildByName("new").scaleX = value/100; 
+            view.stage.getChildByName("new").scaleY = value/100; 
+            view.stage.update();
 	    }
 	    
 	    function animate() {
