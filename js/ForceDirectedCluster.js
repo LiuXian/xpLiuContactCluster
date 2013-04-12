@@ -15,6 +15,7 @@
             	var view = this;
                 var $e = view.$el;
 				var stage = new createjs.Stage("demoCanvas");
+				stage.enableMouseOver();
 				view.stage = stage;
 				
 				$("#level-slider").slider({
@@ -72,7 +73,7 @@
 				container.y = 500 + view.ry;
 				
 				var zoomValue = $("#zoom-slider").slider("value")/100;
-				console.log(zoomValue);
+				
 				container.scaleX = zoomValue; 
                 container.scaleY = zoomValue; 
 				
@@ -293,9 +294,24 @@
         	
         	
         	 function createText(x0, y0, name){
+        	    var view = this;
                 var text = new createjs.Text(name, "10px Arial, #000");
-                    text.x = x0 - 10;
-                    text.y = y0 + 10;
+                
+                text.addEventListener("mouseover", function(event) {
+                    event.target.color = "#6AD144";
+                    console.log("mouseover");
+                    view.stage.update();
+                });
+                
+                text.addEventListener("mouseout", function(event) {
+                    event.target.color = "#000";
+                    console.log("mouseout");
+                    view.stage.update();
+                });
+                
+                text.cursor = "pointer";
+                text.x = x0 - 10;
+                text.y = y0 + 10;
                 return text;
             }
         
