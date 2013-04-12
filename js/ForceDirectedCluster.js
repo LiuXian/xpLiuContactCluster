@@ -83,9 +83,12 @@
         
         
         //generate line
-	    function genLine(start, end) {
+	    function genLine(start, end, level) {
+	        var view = this;
 	    	var line = new createjs.Shape();
-			line.graphics.beginStroke("#969DA7").moveTo(start.x,start.y).lineTo(end.x, end.y);
+	    	color = ["#E1B57C", "#DDE17C", "#7CE1C8", "#BC7CE1"];
+	    	var index = view.level - level;
+			line.graphics.beginStroke(color[index]).moveTo(start.x,start.y).lineTo(end.x, end.y);
 			return line;
 	    }
 	    
@@ -211,8 +214,8 @@
 			        var cy = fpos[i].y;
 			        var cData = childrenData[i];
 			        
-			        var line = genLine({x: rx, y: ry}, {x: cx, y: cy});
-			        var node = genCircle(5, {x: cx, y: cy}, cData.name);
+			        var line = genLine.call(view, {x: rx, y: ry}, {x: cx, y: cy}, level);
+			        var node = genCircle.call(view, 5, {x: cx, y: cy}, cData.name);
 			        containerRoot.addChild(line);
 			        containerRoot.addChild(node);
 			       	//add the click event for node
