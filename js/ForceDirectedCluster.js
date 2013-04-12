@@ -70,6 +70,12 @@
 			    
 			    container.x = 500 + view.rx;
 				container.y = 500 + view.ry;
+				
+				var zoomValue = $("#zoom-slider").slider("value")/100;
+				console.log(zoomValue);
+				container.scaleX = zoomValue; 
+                container.scaleY = zoomValue; 
+				
 			    container.name = "new";
 			    view.container = container;
 			    
