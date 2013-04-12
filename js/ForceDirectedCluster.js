@@ -299,13 +299,11 @@
                 
                 text.addEventListener("mouseover", function(event) {
                     event.target.color = "#6AD144";
-                    console.log("mouseover");
                     view.stage.update();
                 });
                 
                 text.addEventListener("mouseout", function(event) {
                     event.target.color = "#000";
-                    console.log("mouseout");
                     view.stage.update();
                 });
                 
