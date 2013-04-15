@@ -19,7 +19,7 @@
 				view.stage = stage;
 				
 				$("#level-slider").slider({
-					value:3,
+					value:2,
 					min: 1,
 					max: 4,
 					step: 1,
@@ -46,6 +46,43 @@
 					slide: function(event, ui) {
 						$("#zoom").val(ui.value + "%");
 						zoom.call(view, ui.value);
+						
+						if(ui.value >= 150) {
+						    view.level = 1;
+                            view.showGraphic(view.chartData);
+                            var newContainer = view.stage.getChildByName("new");
+                            view.stage.removeChild(newContainer);
+                            view.stage.update();
+						}
+						
+						if(ui.value < 150) {
+                            view.level = 2;
+                            view.showGraphic(view.chartData);
+                            var newContainer = view.stage.getChildByName("new");
+                            view.stage.removeChild(newContainer);
+                            view.stage.update();
+                        }
+                        
+                        if(ui.value < 100) {
+                            view.level = 3;
+                            view.showGraphic(view.chartData);
+                            var newContainer = view.stage.getChildByName("new");
+                            view.stage.removeChild(newContainer);
+                            view.stage.update();
+                        }
+                        
+                        if(ui.value < 50) {
+                            view.level = 3;
+                            view.showGraphic(view.chartData);
+                            var newContainer = view.stage.getChildByName("new");
+                            view.stage.removeChild(newContainer);
+                            view.stage.update();
+                        }
+                        
+                        $("#level").val(view.level);
+                        
+                        $("#level-slider").val(view.level);
+				
 					}
 				});
 				
