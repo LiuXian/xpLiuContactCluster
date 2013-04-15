@@ -183,7 +183,9 @@ body {
   margin-right: 10px;
   margin-left: 5px;
 }
-#demoCanvas {
+.canvas-container {
+  width: 1000px;
+  height: 1000px;
   position: absolute;
   top: -250px;
   left: 0px;
