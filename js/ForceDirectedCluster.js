@@ -56,7 +56,7 @@
 					min: 10,
 					max: 200,
 					step: 10,
-					slide: function(event, ui) {
+					stop: function(event, ui) {
 						$("#zoom").val(ui.value + "%");
 						zoom.call(view, ui.value);
 						
