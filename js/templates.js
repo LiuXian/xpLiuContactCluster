@@ -34,7 +34,7 @@ Handlebars.templates['tmpl-ForceDirectedCluster'] = Handlebars.template(function
   
 
 
-  return "<div class=\"ForceDirectedCluster\">\n		<div class=\"container\">\n			<p>\n			  <label for=\"level\">Level:</label>\n			  <input type=\"text\" id=\"level\" style=\"border: 0; color: #f6931f; font-weight: bold;\" />\n			</p>\n	 \n			<div id=\"level-slider\"></div>\n			\n			<p>\n			  <label for=\"zoom\">Zoom:</label>\n			  <input type=\"text\" id=\"zoom\" style=\"border: 0; color: #f6931f; font-weight: bold;\" />\n			</p>\n	 \n			<div id=\"zoom-slider\"></div>			\n		</div>\n		<canvas id='demoCanvas' width='1500px' height='1000px'></canvas>\n	</div>";}
+  return "<div class=\"ForceDirectedCluster\">\n		<div class=\"container\">\n			<p>\n			  <label for=\"level\">Level:</label>\n			  <input type=\"text\" id=\"level\" style=\"border: 0; color: #f6931f; font-weight: bold;\" />\n			</p>\n	 \n			<div id=\"level-slider\"></div>\n			\n			<p>\n			  <label for=\"zoom\">Zoom:</label>\n			  <input type=\"text\" id=\"zoom\" style=\"border: 0; color: #f6931f; font-weight: bold;\" />\n			</p>\n	 \n			<div id=\"zoom-slider\"></div>			\n		</div>\n		<div class=\"canvas-container\">\n			<canvas id='demoCanvas'></canvas>\n		</div>\n	</div>";}
 );
 
 // template --- tmpl-MainScreen ---

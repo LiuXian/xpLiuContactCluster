@@ -14,6 +14,19 @@
             postDisplay:function (data, config) {
             	var view = this;
                 var $e = view.$el;
+                
+                var canvas = $e.find("#demoCanvas")[0];
+                var cWidth = $(canvas).parent().width();
+                var cHeight = $(canvas).parent().height();
+                transX = cWidth/2;
+                transY = cHeight/2;
+                
+                console.log(transX);
+                console.log(transY);
+               
+                canvas.width = cWidth;
+                canvas.height = cHeight;
+                
 				var stage = new createjs.Stage("demoCanvas");
 				stage.enableMouseOver();
 				view.stage = stage;
@@ -106,8 +119,8 @@
             	
 			    var container = createContainer.call(view, chartData, view.originPoint, view.level, 0);
 			    
-			    container.x = 500 + view.rx;
-				container.y = 500 + view.ry;
+			    container.x = transX + view.rx;
+				container.y = transY + view.ry;
 				
 				var zoomValue = $("#zoom-slider").slider("value")/100;
 				
@@ -199,11 +212,11 @@
 				var dx = tween(t, (view.rx * b), c1, d) / 100;
 				var dy = tween(t, (view.ry * b), c2, d) / 100;
 		        
-				newContainer.x =  500 + view.rx - dx;
-				newContainer.y =  500 + view.ry - dy;
+				newContainer.x =  transX + view.rx - dx;
+				newContainer.y =  transY + view.ry - dy;
 		       
-				oldContainer.x =  500 - dx;
-				oldContainer.y =  500 - dy;
+				oldContainer.x =  transX - dx;
+				oldContainer.y =  transY - dy;
 		        
 				stage.update(event);
 				
