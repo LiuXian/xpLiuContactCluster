@@ -14,12 +14,22 @@
             postDisplay:function (data, config) {
             	var view = this;
                 var $e = view.$el;
+                
+                var canvas = $e.find("#demoCanvas")[0];
+                var cWidth = $(canvas).parent().width();
+                var cHeight = $(canvas).parent().height();
+                transX = cWidth/2;
+                transY = cHeight/2;
+                
+                canvas.width = cWidth;
+                canvas.height = cHeight;
+                
 				var stage = new createjs.Stage("demoCanvas");
 				stage.enableMouseOver();
 				view.stage = stage;
 				
 				$("#level-slider").slider({
-					value:3,
+					value:2,
 					min: 1,
 					max: 4,
 					step: 1,
@@ -43,9 +53,46 @@
 					min: 10,
 					max: 200,
 					step: 10,
-					slide: function(event, ui) {
+					stop: function(event, ui) {
 						$("#zoom").val(ui.value + "%");
 						zoom.call(view, ui.value);
+						
+						if(ui.value >= 150) {
+						    view.level = 1;
+                            view.showGraphic(view.chartData);
+                            var newContainer = view.stage.getChildByName("new");
+                            view.stage.removeChild(newContainer);
+                            view.stage.update();
+						}
+						
+						if(ui.value < 150) {
+                            view.level = 2;
+                            view.showGraphic(view.chartData);
+                            var newContainer = view.stage.getChildByName("new");
+                            view.stage.removeChild(newContainer);
+                            view.stage.update();
+                        }
+                        
+                        if(ui.value < 100) {
+                            view.level = 3;
+                            view.showGraphic(view.chartData);
+                            var newContainer = view.stage.getChildByName("new");
+                            view.stage.removeChild(newContainer);
+                            view.stage.update();
+                        }
+                        
+                        if(ui.value < 50) {
+                            view.level = 3;
+                            view.showGraphic(view.chartData);
+                            var newContainer = view.stage.getChildByName("new");
+                            view.stage.removeChild(newContainer);
+                            view.stage.update();
+                        }
+                        
+                        $("#level").val(view.level);
+                        
+                        $("#level-slider").val(view.level);
+				
 					}
 				});
 				
@@ -69,8 +116,8 @@
             	
 			    var container = createContainer.call(view, chartData, view.originPoint, view.level, 0);
 			    
-			    container.x = 500 + view.rx;
-				container.y = 500 + view.ry;
+			    container.x = transX + view.rx;
+				container.y = transY + view.ry;
 				
 				var zoomValue = $("#zoom-slider").slider("value")/100;
 				
@@ -122,7 +169,7 @@
 			var view = $("body").bFindComponents("ForceDirectedCluster")[0];
 			var userName = event.target.name;
 		 	view.container.name = "old";
-		 	app.ContactDao.getByName(userName).done(function(userData){ 
+		 	app.ContactDao.getByName(userName).done(function(userData){
 		 		view.showGraphic(userData, event.target.cx, event.target.cy);
 		 	})
 			
@@ -162,11 +209,11 @@
 				var dx = tween(t, (view.rx * b), c1, d) / 100;
 				var dy = tween(t, (view.ry * b), c2, d) / 100;
 		        
-				newContainer.x =  500 + view.rx - dx;
-				newContainer.y =  500 + view.ry - dy;
+				newContainer.x =  transX + view.rx - dx;
+				newContainer.y =  transY + view.ry - dy;
 		       
-				oldContainer.x =  500 - dx;
-				oldContainer.y =  500 - dy;
+				oldContainer.x =  transX - dx;
+				oldContainer.y =  transY - dy;
 		        
 				stage.update(event);
 				
