@@ -170,13 +170,12 @@
 			var userName = event.target.name;
 		 	view.container.name = "old";
 		 	app.ContactDao.getByName(userName).done(function(userData){
-		 	    console.log(event.target); 
 		 		view.showGraphic(userData, event.target.cx, event.target.cy);
 		 	})
 			
 			view.rx = event.target.cx;
 			view.ry = event.target.cy;
-			//animate();
+			animate();
 	    }
 	    
 	    function zoom(value) {
