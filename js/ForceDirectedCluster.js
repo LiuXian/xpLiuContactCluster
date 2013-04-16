@@ -21,6 +21,7 @@
                 transX = cWidth/2;
                 transY = cHeight/2;
                 
+               
                 canvas.width = cWidth;
                 canvas.height = cHeight;
                 
@@ -167,6 +168,7 @@
 		//the click event method
 		function handlerMethod(event) {
 			var view = $("body").bFindComponents("ForceDirectedCluster")[0];
+			var $e = view.$el;
 			var userName = event.target.name;
 		 	view.container.name = "old";
 		 	app.ContactDao.getByName(userName).done(function(userData){
@@ -175,7 +177,11 @@
 			
 			view.rx = event.target.cx;
 			view.ry = event.target.cy;
-			animate();
+			
+			//duration 
+            var animationSpeed = $e.find("#speed").val() || 500;
+            
+			animate(animationSpeed);
 	    }
 	    
 	    function zoom(value) {
@@ -185,7 +191,7 @@
             view.stage.update();
 	    }
 	    
-	    function animate() {
+	    function animate(animationSpeed) {
 	    	var view = $("body").bFindComponents("ForceDirectedCluster")[0];
 	    	var stage = view.stage;
 	    	view.s = (new Date()).getTime();
@@ -198,7 +204,7 @@
 		    	var newContainer = view.stage.getChildByName("new");
 		    	var	t = (new Date()).getTime() - view.s;
 				var	b = 1;
-				var	d = 500;
+				var	d = animationSpeed;
 	            var c1 = adv(view.rx, b) * 100;
 	            var c2 = adv(view.ry, b) * 100;
 	            var c3 = adv(1, b) * 100;
