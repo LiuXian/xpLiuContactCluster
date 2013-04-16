@@ -91,7 +91,7 @@
                         
                         $("#level").val(view.level);
                         
-                        $("#level-slider").val(view.level);
+                        $("#level-slider").slider("value",  view.level);
 				
 					}
 				});
