@@ -183,12 +183,18 @@ body {
   margin-right: 10px;
   margin-left: 5px;
 }
+.ForceDirectedCluster .container {
+  width: 300px;
+  position: absolute;
+  top: 0px;
+  left: 10px;
+}
 .canvas-container {
   width: 1000px;
   height: 1000px;
   position: absolute;
   top: -250px;
-  left: 0px;
+  left: 250px;
 }
 .ui-slider {
   position: relative;
