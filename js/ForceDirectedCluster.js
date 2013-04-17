@@ -207,22 +207,15 @@
 				var	d = animationSpeed;
 	            var c1 = adv(view.rx, b) * 100;
 	            var c2 = adv(view.ry, b) * 100;
-	            var c3 = adv(1, b) * 100;
-	            
 		    	oldContainer.alpha = oldContainer.alpha - 0.05;
 		        newContainer.alpha = newContainer.alpha + 0.05;
-		        
 				var dx = tween(t, (view.rx * b), c1, d) / 100;
 				var dy = tween(t, (view.ry * b), c2, d) / 100;
-		        
 				newContainer.x =  transX + view.rx - dx;
 				newContainer.y =  transY + view.ry - dy;
-		       
 				oldContainer.x =  transX - dx;
 				oldContainer.y =  transY - dy;
-		        
 				stage.update(event);
-				
 				if(t > d ){
 					createjs.Ticker.removeEventListener("tick",handleTick);
 		        	stage.removeChild(oldContainer);
@@ -233,7 +226,9 @@
 		    } 
 	    }
 	    
-	    function tween(t, b, c, d){ return - c * (t /= d) * (t - 2) + b}
+	    function tween(t, b, c, d){
+	    	return (t == d) ? b + c: c * ( - Math.pow(2, -10 * t / d) + 1) + b
+	    }
 			    
 	    function adv(val, b){
            var va, re= /^([+-\\*\/]=)([-]?[\d.]+)/ ;
@@ -269,7 +264,6 @@
       			var rx = originPoint.x;
 				var ry = originPoint.y;
      			var containerRoot = new createjs.Container();
-     			
      			var fpos = getPos.call(view, childrenData, originPoint, level, exAngle);
 			    
         		//draw the nodes and line
@@ -278,7 +272,7 @@
         			var cx = fpos[i].x;
 			        var cy = fpos[i].y;
 			        var cData = childrenData[i];
-			        
+			         
 			        var line = genLine.call(view, {x: rx, y: ry}, {x: cx, y: cy}, level);
 			        var node = genCircle.call(view, 5, {x: cx, y: cy}, cData.name);
 			        containerRoot.addChild(line);
@@ -318,8 +312,6 @@
         		var view = this;
         		var rx = originPoint.x;
 				var ry = originPoint.y;
-				
-				
 				if((view.level - level) == 0) {
                     l = 150;
                 }else if((view.level - level) == 1) {
@@ -329,15 +321,11 @@
                 } else if((view.level - level) == 3) {
                     l = 0;
                 }
-				
-      			
       			var angle = Math.PI * 2 / childrenData.length ;
-        		
         		var fpos = [];
 		      	for(var i = 0; i < childrenData.length; i++){
 			        var cData = childrenData[i];
 			        var weight = cData.weight;
-					
 			        var cx = rx + (l + weight*5) * Math.sin(angle * i + exAngle);
 			        var cy = ry + (l + weight*5) * Math.cos(angle * i + exAngle);
 			        fpos.push({x:cx, y:cy});
@@ -349,7 +337,6 @@
         	 function createText(x0, y0, name){
         	    var view = this;
                 var text = new createjs.Text(name, "10px Arial, #000");
-                
                 text.addEventListener("mouseover", function(event) {
                     event.target.color = "#6AD144";
                     view.stage.update();
