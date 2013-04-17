@@ -181,6 +181,14 @@
 			//duration 
             var animationSpeed = $e.find("#speed").val() || 500;
             
+            //check the input value of the animate speed
+            var pattern  = /^\d+$/;
+            
+            if(!pattern.test(animationSpeed)) {
+            	$e.find("#speed").val(500);
+            	animationSpeed = 500;
+            }
+             
 			animate(animationSpeed);
 	    }
 	    
