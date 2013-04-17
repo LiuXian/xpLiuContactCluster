@@ -115,6 +115,9 @@
             	
             	view.originPoint = {x:0, y: 0};
             	
+            	//createjs.Ticker.useRAF = true;
+                createjs.Ticker.setFPS(60);
+            	
 			    var container = createContainer.call(view, chartData, view.originPoint, view.level, 0);
 			    
 			    container.x = transX + view.rx;
@@ -180,6 +183,12 @@
 			
 			//duration 
             var animationSpeed = $e.find("#speed").val() || 500;
+            
+            useRAF = $e.find("#RAF")[0].checked;
+            createjs.Ticker.useRAF = useRAF;
+            if(useRAF) {
+                createjs.Ticker.setFPS(60);     
+            }
             
             //check the input value of the animate speed
             var pattern  = /^\d+$/;
