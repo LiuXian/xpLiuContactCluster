@@ -1,6 +1,8 @@
 ;(function() {
 	
     (function ($) {
+    	var _weightPerLength = [20,10,8,4];
+    	var _baseLineLen = [80,40,20,10];
         brite.registerView("ForceDirectedCluster",  {
         	emptyParent : true,
 			parent:".MainScreen-main"
@@ -14,23 +16,18 @@
             postDisplay:function (data, config) {
             	var view = this;
                 var $e = view.$el;
-                
                 var canvas = $e.find("#demoCanvas")[0];
                 var cWidth = $(canvas).parent().width();
                 var cHeight = $(canvas).parent().height();
                 transX = cWidth/2;
                 transY = cHeight/2;
-                
-               
                 canvas.width = cWidth;
                 canvas.height = cHeight;
-                
 				var stage = new createjs.Stage("demoCanvas");
 				stage.enableMouseOver();
 				view.stage = stage;
-				
 				$("#level-slider").slider({
-					value:2,
+					value:1,
 					min: 1,
 					max: 4,
 					step: 1,
@@ -57,7 +54,6 @@
 					stop: function(event, ui) {
 						$("#zoom").val(ui.value + "%");
 						zoom.call(view, ui.value);
-						
 						if(ui.value >= 150) {
 						    view.level = 1;
                             view.showGraphic(view.chartData);
@@ -106,35 +102,28 @@
             	
             },
             
-            showGraphic: function(chartData, rx, ry) {
+            showGraphic: function(chartData, rx, ry,level,angleVal) {
             	var view = this;
             	view.rx = rx || 0;
             	view.ry = ry || 0;
-            	
             	var stage = view.stage;
-            	
+            	view.rootName = chartData.name;
             	view.originPoint = {x:0, y: 0};
-            	
-            	//createjs.Ticker.useRAF = true;
                 createjs.Ticker.setFPS(60);
-            	
-			    var container = createContainer.call(view, chartData, view.originPoint, view.level, 0);
-			    
+                if(!angleVal)
+                	angleVal = 0;
+			    var container = createContainer.call(view, chartData, view.originPoint, view.level, angleVal);
 			    container.x = transX + view.rx;
 				container.y = transY + view.ry;
-				
 				var zoomValue = $("#zoom-slider").slider("value")/100;
-				
 				container.scaleX = zoomValue; 
                 container.scaleY = zoomValue; 
-				
 			    container.name = "new";
 			    view.container = container;
-			    
 			    stage.addChild(container);
 			    stage.update();
-			    
-            }
+            },
+            
         });
         
         
@@ -155,6 +144,7 @@
 	        circle.name = name;
 	    	circle.cx = pos.x;
 	    	circle.cy = pos.y;
+	    	circle.angleVal = pos.angleVal;
 	    	return circle;
 	    }
 	    
@@ -172,18 +162,17 @@
 		function handlerMethod(event) {
 			var view = $("body").bFindComponents("ForceDirectedCluster")[0];
 			var $e = view.$el;
+			view.oldRootName = view.rootName;
+			view.rootName = event.target.name;
 			var userName = event.target.name;
 		 	view.container.name = "old";
 		 	app.ContactDao.getByName(userName).done(function(userData){
-		 		view.showGraphic(userData, event.target.cx, event.target.cy);
-		 	})
-			
+		 		view.showGraphic(userData, event.target.cx, event.target.cy, level, (Math.PI+event.target.angleVal), true);
+		 	});
 			view.rx = event.target.cx;
 			view.ry = event.target.cy;
-			
 			//duration 
             var animationSpeed = $e.find("#speed").val() || 500;
-            
             useRAF = $e.find("#RAF")[0].checked;
             createjs.Ticker.useRAF = useRAF;
             if(useRAF) {
@@ -201,6 +190,7 @@
 			animate(animationSpeed);
 	    }
 	    
+	
 	    function zoom(value) {
 	        var view = this;
 	        view.stage.getChildByName("new").scaleX = value/100; 
@@ -271,29 +261,31 @@
                 return parseFloat(val) - b;
         }
         
-        function createContainer(data, originPoint, level, exAngle){
+        function createContainer(data, originPoint, level, exAngle, isRecreate){
         		var view = this;
         		var parentName = data.name;
+        		console.log(view.rx,view.ry,view.rootName);
 				var childrenData = data.children;
-				
+				//put the root data as the first one
+				childrenData = app.transformDataFirst( childrenData,isRecreate?view.rootName:view.oldRootName);
       			var stage = view.stage;
       			var angle = Math.PI * 2 / childrenData.length ;
       			var rx = originPoint.x;
 				var ry = originPoint.y;
      			var containerRoot = new createjs.Container();
-     			var fpos = getPos.call(view, childrenData, originPoint, level, exAngle);
-			    
+     			var fpos =getPos.call(view, childrenData, originPoint, level, exAngle);
         		//draw the nodes and line
         		$.each(childrenData,function(i, item){
         			if(level != view.level && i == 0) return;
         			var cx = fpos[i].x;
 			        var cy = fpos[i].y;
+			        var angleVal = fpos[i].angleVal;
 			        var cData = childrenData[i];
-			         
 			        var line = genLine.call(view, {x: rx, y: ry}, {x: cx, y: cy}, level);
-			        var node = genCircle.call(view, 5, {x: cx, y: cy}, cData.name);
+			        var node = genCircle.call(view, 5, {x: cx, y: cy,angleVal:angleVal}, cData.name);
 			        containerRoot.addChild(line);
 			        containerRoot.addChild(node);
+			     
 			       	//add the click event for node
 					node.addEventListener("click", handlerMethod);
 					
@@ -329,23 +321,20 @@
         		var view = this;
         		var rx = originPoint.x;
 				var ry = originPoint.y;
-				if((view.level - level) == 0) {
-                    l = 150;
-                }else if((view.level - level) == 1) {
-                    l = 50;
-                }else if((view.level - level) == 2) {
-                    l = 10;
-                } else if((view.level - level) == 3) {
-                    l = 0;
-                }
+				var weightPerLength = _weightPerLength[view.level - level];
+      			var baseLineLen = _baseLineLen[view.level - level];
       			var angle = Math.PI * 2 / childrenData.length ;
         		var fpos = [];
 		      	for(var i = 0; i < childrenData.length; i++){
 			        var cData = childrenData[i];
+			      
 			        var weight = cData.weight;
-			        var cx = rx + (l + weight*5) * Math.sin(angle * i + exAngle);
-			        var cy = ry + (l + weight*5) * Math.cos(angle * i + exAngle);
-			        fpos.push({x:cx, y:cy});
+					//the higher weight, the closer the length
+					weight = 10 - weight;
+			        var l = weight * weightPerLength + baseLineLen;
+			        var cx = rx + l * Math.sin(angle * i + exAngle);
+			        var cy = ry + l * Math.cos(angle * i + exAngle);
+			        fpos.push({x:cx, y:cy, angleVal:(angle * i + exAngle)});
 			    }
 			    return fpos;
         	}
@@ -369,6 +358,8 @@
                 text.y = y0 + 10;
                 return text;
             }
+     
+        	
         
     })(jQuery);
 
