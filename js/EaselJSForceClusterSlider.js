@@ -120,6 +120,18 @@
 			        node.relatedLine = line;
 			        node.angleVal = fpos[i].angleVal;
 			        node.weight = cData.weight;
+			        if(cData.parentId !="undefind" || cData.parentId != null){
+			        	if(cData.parentId == fpos[i].parentId){
+			        		$.each(childrenData,function(k,m){
+			        			if(cData.parentId == fpos[k].parentId){
+			        				parentAngleVal = Math.PI - fpos[i].exAngle - (fpos[k].angleVal - fpos[i].exAngle);
+			        				node.parent.angleVal = parentAngleVal;
+			        				node.parent.cx = fpos[k].x;
+			        				node.parent.cy = fpos[k].y
+			        			}
+			        		});
+			        	}
+			        }
 			        
 			        //add the mouseover event for node
 			        node.addEventListener("mouseover", function(d){mouseoverEvent.call(view,d)});
@@ -186,7 +198,7 @@
 			        var l = weight * weightPerLength + baseLineLen;
 			        var cx = rx + l * Math.sin(angle * i + exAngle);
 			        var cy = ry + l * Math.cos(angle * i + exAngle);
-			        fpos.push({x:cx, y:cy, angleVal:(angle * i + exAngle)});
+			        fpos.push({x:cx, y:cy, angleVal:(angle * i + exAngle), exAngle:exAngle, userid:cData.id, parentId:(cData.parentId!=null?cData.parentId:null),username:cData.name});
 			    }
 			    return fpos;
         	}
@@ -275,7 +287,19 @@
       			
       			app.ContactDao.getByName(d.target.name).done(function(userData){
 					//add new container
-					var newContainer = createContainer.call(view, userData, {x:view.canvasW/2, y: view.canvasH/2}, view.level, (Math.PI+d.target.angleVal),true);
+      				var angelVal = 0 ;
+      				var x = 0 ;
+      				var y = 0 ;
+      				if((view.level - level) == 0){
+      					angelVal = d.target.angleVal;
+      					x = d.target.x;
+      					y = d.terget.y;
+      				}else{
+      					angelVal = d.target.parent.angleVal;
+      					x = d.target.parent.cx;
+      					y = d.target.parent.cx;
+      				}
+					var newContainer = createContainer.call(view, userData, {x:view.canvasW/2, y: view.canvasH/2}, view.level, (Math.PI+angelVal),true);
 					    newContainer.name = view.newContainerName;
 					    newContainer.x = newContainer.x + (d.target.x - rx)*view.scaleVal;
 					    newContainer.y = newContainer.y + (d.target.y - ry)*view.scaleVal;
@@ -293,7 +317,7 @@
 				   		});
 				   	}
 					      	
-					var ox = statLayout.x - (d.target.x - rx);
+				   	var ox = statLayout.x - (d.target.x  - rx);
 					var oy = statLayout.y - (d.target.y - ry);
 					      	
 					createjs.Tween.get(statLayout).to({alpha : 0, x : ox, y : oy }, app.animationSpeed,createjs.Ease.quartInOut); 
