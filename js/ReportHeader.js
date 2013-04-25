@@ -10,7 +10,6 @@
             postDisplay:function (data, config) {
                 var view = this;
                 var $e = view.$el;
-                
             },
             events:{
             	"btap;.nav li":function(e){
@@ -34,6 +33,8 @@
             		  	brite.display("EaselJSTweenContactCluster");
             		}else if(menu == "ForceDirectedCluster"){
             			brite.display("ForceDirectedCluster");
+            		}else if(menu == "EaselJSForceClusterSlider"){
+            			brite.display("EaselJSForceClusterSlider");
             		}
             	}
             }
