@@ -21,6 +21,24 @@
                	var scaleVal = $e.closest(".MainScreen").find(".ControlBar #sl2").val();
               	view.scaleVal = scaleVal/100;
               	
+                 view.level = view.level || 2;
+                 view.scaleVal = view.scaleVal || 1;
+                 
+                 $e.find("li.d3jsPart").hide();
+                 $e.find("li.fabricjsPart").hide();
+                 
+                 $('#sl1').slider().off('slide').on('slide', function(ev){
+                 	if(view.level != ev.value){
+                 		view.level = ev.value;
+ 	                	view.$el.trigger("DO_LEVEL_CHANGE",{level:ev.value});
+                 	}
+ 				});
+ 				
+ 				$('#sl2').slider().off('slide').on('slide', function(ev){
+                 	var scaleVal = ev.value/100;
+                 	view.scaleVal = scaleVal;
+                 	view.$el.trigger("DO_ZOOM_CHANGE",{scaleVal:scaleVal});
+ 				});
                 app.ContactDao.get().done(function(chartData){
                 	view.chartData = chartData;     
                 	view.showView(chartData);
