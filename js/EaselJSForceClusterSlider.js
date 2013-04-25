@@ -21,6 +21,24 @@
                	var scaleVal = $e.closest(".MainScreen").find(".ControlBar #sl2").val();
               	view.scaleVal = scaleVal/100;
               	
+                 view.level = view.level || 2;
+                 view.scaleVal = view.scaleVal || 1;
+                 
+                 $e.find("li.d3jsPart").hide();
+                 $e.find("li.fabricjsPart").hide();
+                 
+                 $('#sl1').slider().off('slide').on('slide', function(ev){
+                 	if(view.level != ev.value){
+                 		view.level = ev.value;
+ 	                	view.$el.trigger("DO_LEVEL_CHANGE",{level:ev.value});
+                 	}
+ 				});
+ 				
+ 				$('#sl2').slider().off('slide').on('slide', function(ev){
+                 	var scaleVal = ev.value/100;
+                 	view.scaleVal = scaleVal;
+                 	view.$el.trigger("DO_ZOOM_CHANGE",{scaleVal:scaleVal});
+ 				});
                 app.ContactDao.get().done(function(chartData){
                 	view.chartData = chartData;     
                 	view.showView(chartData);
@@ -120,19 +138,9 @@
 			        node.relatedLine = line;
 			        node.angleVal = fpos[i].angleVal;
 			        node.weight = cData.weight;
-			        if(cData.parentId !="undefind" || cData.parentId != null){
-			        	if(cData.parentId == fpos[i].parentId){
-			        		$.each(childrenData,function(k,m){
-			        			if(cData.parentId == fpos[k].parentId){
-			        				parentAngleVal = Math.PI - fpos[i].exAngle - (fpos[k].angleVal - fpos[i].exAngle);
-			        				node.parent.angleVal = parentAngleVal;
-			        				node.parent.cx = fpos[k].x;
-			        				node.parent.cy = fpos[k].y
-			        			}
-			        		});
-			        	}
-			        }
-			        
+			        node.parent.name = parentName;
+			        node.parent.cx = data.x;
+			        node.parent.cy = data.y;
 			        //add the mouseover event for node
 			        node.addEventListener("mouseover", function(d){mouseoverEvent.call(view,d)});
 			        
@@ -142,7 +150,7 @@
 			        node.addEventListener("mousedown", function(d){mousedownEvent.call(view,d)});
 			        
 			       	//add the click event for node
-					node.addEventListener("click", function(d){clickEvent.call(view,d)});
+					node.addEventListener("click", function(d){clickEvent.call(view,d,level)});
 
 			        //show the label
 			        if((view.level-level) <= 1){
@@ -261,7 +269,7 @@
 		      	return text;
 		    }
 		    
-		    function clickEvent(d){
+		    function clickEvent(d,level){
 		    	var view = this;
 		    	if(view.mousemove) return;
 		    	//get the speed value
@@ -270,7 +278,14 @@
 			    //change the origin node and the click node
 			    var stage = view.stage;
 			    view.oldRootName = view.rootName;
-			    view.rootName = d.target.name;
+			    var boolean = false;
+			    if((view.level - level) > 0 ){
+			    	view.rootName = d.target.parent.name;
+			    	boolean = false;
+			    }else{
+			    	view.rootName = d.target.name;
+			    	boolean = true;
+			    }
 			    var rx = view.originPoint.x;
 			    var ry = view.originPoint.y;
 			    var statLayout = stage.getChildByName(view.currentContainerName);
@@ -287,19 +302,7 @@
       			
       			app.ContactDao.getByName(d.target.name).done(function(userData){
 					//add new container
-      				var angelVal = 0 ;
-      				var x = 0 ;
-      				var y = 0 ;
-      				if((view.level - level) == 0){
-      					angelVal = d.target.angleVal;
-      					x = d.target.x;
-      					y = d.terget.y;
-      				}else{
-      					angelVal = d.target.parent.angleVal;
-      					x = d.target.parent.cx;
-      					y = d.target.parent.cx;
-      				}
-					var newContainer = createContainer.call(view, userData, {x:view.canvasW/2, y: view.canvasH/2}, view.level, (Math.PI+angelVal),true);
+					var newContainer = createContainer.call(view, userData, {x:view.canvasW/2, y: view.canvasH/2}, view.level, (Math.PI + d.target.angleVal),boolean);
 					    newContainer.name = view.newContainerName;
 					    newContainer.x = newContainer.x + (d.target.x - rx)*view.scaleVal;
 					    newContainer.y = newContainer.y + (d.target.y - ry)*view.scaleVal;
