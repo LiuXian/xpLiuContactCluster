@@ -165,9 +165,17 @@
 			view.oldRootName = view.rootName;
 			view.rootName = event.target.name;
 			var userName = event.target.name;
+			 var boolean = false;
+			    if((view.level - level) > 0 ){
+			    	view.rootName = event.target.parent.name;
+			    	boolean = false;
+			    }else{
+			    	view.rootName = event.target.name;
+			    	boolean = true;
+			    }
 		 	view.container.name = "old";
 		 	app.ContactDao.getByName(userName).done(function(userData){
-		 		view.showGraphic(userData, event.target.cx, event.target.cy, level, (Math.PI+event.target.angleVal), true);
+		 		view.showGraphic(userData, event.target.cx, event.target.cy, level, (Math.PI+event.target.angleVal), boolean);
 		 	});
 			view.rx = event.target.cx;
 			view.ry = event.target.cy;
@@ -264,7 +272,6 @@
         function createContainer(data, originPoint, level, exAngle, isRecreate){
         		var view = this;
         		var parentName = data.name;
-        		console.log(view.rx,view.ry,view.rootName);
 				var childrenData = data.children;
 				//put the root data as the first one
 				childrenData = app.transformDataFirst( childrenData,isRecreate?view.rootName:view.oldRootName);
@@ -285,6 +292,7 @@
 			        var node = genCircle.call(view, 5, {x: cx, y: cy,angleVal:angleVal}, cData.name);
 			        containerRoot.addChild(line);
 			        containerRoot.addChild(node);
+			        node.parent.name = data.name;
 			     
 			       	//add the click event for node
 					node.addEventListener("click", handlerMethod);
