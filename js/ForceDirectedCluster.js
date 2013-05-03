@@ -27,7 +27,7 @@
 				stage.enableMouseOver();
 				view.stage = stage;
 				$("#level-slider").slider({
-					value:1,
+					value:2,
 					min: 1,
 					max: 4,
 					step: 1,
@@ -85,12 +85,9 @@
                             view.stage.removeChild(newContainer);
                             view.stage.update();
                         }
-                        
-                        $("#level").val(view.level);
-                        
-                        $("#level-slider").slider("value",  view.level);
-				
+                       
 					}
+			    
 				});
 				
 			    $("#zoom").val($("#zoom-slider").slider("value") + "%");
@@ -102,17 +99,21 @@
             	
             },
             
-            showGraphic: function(chartData, rx, ry,level,angleVal) {
+            showGraphic: function(chartData,rootName, rx, ry,level,angleVal,isRecreate) {
             	var view = this;
             	view.rx = rx || 0;
             	view.ry = ry || 0;
             	var stage = view.stage;
-            	view.rootName = chartData.name;
+            	if(rootName !="undefiend"){
+            		view.rootName = rootName
+            	}else{
+            		view.rootName = chartData.name;
+            	}
             	view.originPoint = {x:0, y: 0};
                 createjs.Ticker.setFPS(60);
                 if(!angleVal)
                 	angleVal = 0;
-			    var container = createContainer.call(view, chartData, view.originPoint, view.level, angleVal);
+			    var container = createContainer.call(view, chartData, view.originPoint, view.level, angleVal,isRecreate);
 			    container.x = transX + view.rx;
 				container.y = transY + view.ry;
 				var zoomValue = $("#zoom-slider").slider("value")/100;
@@ -159,18 +160,26 @@
 	    }
 	    
 		//the click event method
-		function handlerMethod(event) {
+		function handlerMethod(d,level) {
 			var view = $("body").bFindComponents("ForceDirectedCluster")[0];
 			var $e = view.$el;
 			view.oldRootName = view.rootName;
-			view.rootName = event.target.name;
-			var userName = event.target.name;
+			view.rootName = d.target.name;
+			var boolean = false;
+		    if((view.level - level) > 0 ){
+		    	view.rootName = d.target.parent.name;
+		    	boolean = false;
+		    }else{
+		    	view.rootName = d.target.name;
+		    	boolean = true;
+		    }
 		 	view.container.name = "old";
-		 	app.ContactDao.getByName(userName).done(function(userData){
-		 		view.showGraphic(userData, event.target.cx, event.target.cy, level, (Math.PI+event.target.angleVal), true);
+		 	app.ContactDao.getByName(d.target.name).done(function(userData){
+		 		view.showGraphic(userData,view.rootName, d.target.cx, d.target.cy, view.level, (Math.PI+d.target.angleVal), boolean);
 		 	});
-			view.rx = event.target.cx;
-			view.ry = event.target.cy;
+		 	
+			view.rx = d.target.cx;
+			view.ry = d.target.cy;
 			//duration 
             var animationSpeed = $e.find("#speed").val() || 500;
             useRAF = $e.find("#RAF")[0].checked;
@@ -264,10 +273,9 @@
         function createContainer(data, originPoint, level, exAngle, isRecreate){
         		var view = this;
         		var parentName = data.name;
-        		console.log(view.rx,view.ry,view.rootName);
 				var childrenData = data.children;
 				//put the root data as the first one
-				childrenData = app.transformDataFirst( childrenData,isRecreate?view.rootName:view.oldRootName);
+				childrenData = app.transformDataFirst(childrenData,isRecreate?view.oldRootName:view.rootName);
       			var stage = view.stage;
       			var angle = Math.PI * 2 / childrenData.length ;
       			var rx = originPoint.x;
@@ -285,9 +293,10 @@
 			        var node = genCircle.call(view, 5, {x: cx, y: cy,angleVal:angleVal}, cData.name);
 			        containerRoot.addChild(line);
 			        containerRoot.addChild(node);
-			     
+			        node.angleVal = fpos[i].angleVal;
+			        node.parent.name = data.name;
 			       	//add the click event for node
-					node.addEventListener("click", handlerMethod);
+					node.addEventListener("click", function(d){handlerMethod.call(view,d,level)});
 					
 					//show the label
 					if((view.level - level) < 2) {
