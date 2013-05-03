@@ -99,12 +99,16 @@
             	
             },
             
-            showGraphic: function(chartData, rx, ry,level,angleVal,isRecreate) {
+            showGraphic: function(chartData,rootName, rx, ry,level,angleVal,isRecreate) {
             	var view = this;
             	view.rx = rx || 0;
             	view.ry = ry || 0;
             	var stage = view.stage;
-            	view.rootName = chartData.name;
+            	if(rootName !="undefiend"){
+            		view.rootName = rootName
+            	}else{
+            		view.rootName = chartData.name;
+            	}
             	view.originPoint = {x:0, y: 0};
                 createjs.Ticker.setFPS(60);
                 if(!angleVal)
@@ -171,8 +175,9 @@
 		    }
 		 	view.container.name = "old";
 		 	app.ContactDao.getByName(d.target.name).done(function(userData){
-		 		view.showGraphic(userData, d.target.cx, d.target.cy, view.level, (Math.PI+d.target.angleVal), boolean);
+		 		view.showGraphic(userData,view.rootName, d.target.cx, d.target.cy, view.level, (Math.PI+d.target.angleVal), boolean);
 		 	});
+		 	
 			view.rx = d.target.cx;
 			view.ry = d.target.cy;
 			//duration 
