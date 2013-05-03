@@ -12,7 +12,6 @@
                 var $e = view.$el;
                 brite.display("ReportHeader");
                 brite.display("ForceDirectedCluster");
-                brite.display("EaselJSForceClusterSlider");
             }
             
         });
