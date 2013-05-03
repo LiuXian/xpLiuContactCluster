@@ -27,7 +27,7 @@
 				stage.enableMouseOver();
 				view.stage = stage;
 				$("#level-slider").slider({
-					value:1,
+					value:2,
 					min: 1,
 					max: 4,
 					step: 1,
@@ -86,11 +86,10 @@
                             view.stage.update();
                         }
                         
-                        $("#level").val(view.level);
-                        
-                        $("#level-slider").slider("value",  view.level);
+                       
 				
 					}
+			    
 				});
 				
 			    $("#zoom").val($("#zoom-slider").slider("value") + "%");
